@@ -37,7 +37,8 @@ python scripts/train.py -e 1000
 ```bash
 python scripts/remote_training.py -e 1000 -u username -p
 ```
-
+### Monitoring and tracking
+Available on [Weights and Biases](https://wandb.ai/balthazarneveu/deblur-from-deadleaves)
 
 ## Live inference
 Compare several models with a live inference
