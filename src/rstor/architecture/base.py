@@ -37,4 +37,4 @@ class BaseModel(torch.nn.Module):
         # Count NaN in the input
         receptive_x = 1+receptive_field_indexes[-1].max() - receptive_field_indexes[-1].min()  # Horizontal x
         receptive_y = 1+receptive_field_indexes[-2].max() - receptive_field_indexes[-2].min()  # Vertical y
-        return receptive_x, receptive_y
+        return receptive_x.item(), receptive_y.item()

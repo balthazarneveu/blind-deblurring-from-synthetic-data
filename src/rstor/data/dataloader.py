@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from typing import Tuple
 from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 import cv2
 import random
 
@@ -49,6 +50,27 @@ class DeadLeavesDataset(Dataset):
         def numpy_to_torch(ndarray):
             return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
         return numpy_to_torch(degraded_chart), numpy_to_torch(chart)
+
+
+def get_data_loader(config, frozen_seed=42, **config_dead_leaves):
+    dl_train = DeadLeavesDataset(config[DATALOADER][SIZE], config[DATALOADER][LENGTH][TRAIN],
+                                 frozen_seed=None, **config[DATALOADER].get(CONFIG_DEAD_LEAVES, {}))
+    dl_valid = DeadLeavesDataset(config[DATALOADER][SIZE], config[DATALOADER][LENGTH][VALIDATION],
+                                 frozen_seed=frozen_seed, **config[DATALOADER].get(CONFIG_DEAD_LEAVES, {}))
+    dl_dict = {
+        TRAIN: DataLoader(
+            dl_train,
+            shuffle=True,
+            batch_size=config[DATALOADER][BATCH_SIZE][TRAIN],
+        ),
+        VALIDATION: DataLoader(
+            dl_valid,
+            shuffle=False,
+            batch_size=config[DATALOADER][BATCH_SIZE][VALIDATION]
+        ),
+        # TEST: DataLoader(dl_test, shuffle=False, batch_size=config[DATALOADER][BATCH_SIZE][TEST])
+    }
+    return dl_dict
 
 
 if __name__ == "__main__":
