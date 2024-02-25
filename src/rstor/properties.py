@@ -1,0 +1,2 @@
+RELU = "ReLU"
+LEAKY_RELU = "LeakyReLU"
