@@ -2,6 +2,7 @@ from rstor.synthetic_data.interactive.interactive_dead_leaves import generate_de
 from rstor.learning.experiments import get_training_content
 from rstor.learning.experiments_definition import get_experiment_config
 from rstor.properties import DEVICE
+from rstor.analyzis.interactive.crop import crop_selector, crop
 import sys
 import numpy as np
 from interactive_pipe import interactive_pipeline, interactive
@@ -29,7 +30,7 @@ def degrade(chart, k_size_x=1, k_size_y=1):
 
 
 @interactive(
-    model_name=("vanilla", ["vanilla", "unittest", "NAFNET"])
+    model_name=("vanilla", ["vanilla", "vanilla-large-blur", "unittest", "NAFNET"])
 )
 def model_selector(models_dict: dict, model_name="vanilla"):
     return models_dict[model_name]
@@ -40,12 +41,18 @@ def deadleave_inference_pipeline(models_dict: dict):
     model = model_selector(models_dict)
     degraded_chart = degrade(groundtruth)
     restored_chart = infer(degraded_chart, model)
+    crop_selector(restored_chart)
+    groundtruth, degraded_chart, restored_chart = crop(groundtruth, degraded_chart, restored_chart)
     return groundtruth, degraded_chart, restored_chart
 
 
 def main(argv):
     model_dict = {}
-    for exp, name in [(1000, "vanilla"), (-1, "unittest")]:
+    for exp, name in [
+        (1000, "vanilla"),
+        (1001, "vanilla-large-blur"),
+        # (-1, "unittest"),
+    ]:
         config = get_experiment_config(exp)
         model, _, _ = get_training_content(config, training_mode=False)
         model.load_state_dict(torch.load(MODELS_PATH/f"{exp:04d}"/"best_model.pt"))
