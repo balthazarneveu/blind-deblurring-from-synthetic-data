@@ -1,7 +1,8 @@
 from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               TRAIN, VALIDATION, SCHEDULER, REDUCELRONPLATEAU,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
-                              LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES)
+                              LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
+                              PRETTY_NAME)
 
 
 def default_experiment(exp: int, b: int = 32, n: int = 50, length=5000) -> dict:
@@ -49,9 +50,11 @@ def get_experiment_config(exp: int) -> dict:
         config = default_experiment(exp, length=10, n=2)
     elif exp == 1000:
         config = default_experiment(exp)
+        config[PRETTY_NAME] = "Vanilla small blur"
     elif exp == 1001:
         config = default_experiment(exp)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 10])
+        config[PRETTY_NAME] = "Vanilla large blur"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
