@@ -1,4 +1,5 @@
 import torch
+from interactive_pipe import KeyboardControl
 from rstor.learning.experiments import get_training_content
 from rstor.learning.experiments_definition import get_experiment_config
 from rstor.properties import DEVICE, PRETTY_NAME
@@ -9,12 +10,15 @@ from typing import List, Tuple
 from interactive_pipe import interactive
 MODELS_PATH = Path("scripts")/"__output"
 
-# @TODO: link simple names to experiment definition
-# @TODO: Find a proper way to define the models dialog list from CLI
-
 
 def model_selector(models_dict: dict, global_params={}, model_name="vanilla"):
-    current_model = models_dict[model_name]
+    if isinstance(model_name, str):
+        current_model = models_dict[model_name]
+    elif isinstance(model_name, int):
+        model_names = [name for name in models_dict.keys()]
+        current_model = models_dict[model_names[model_name % len(model_names)]]
+    else:
+        raise ValueError(f"Model name {model_name} not understood")
     global_params["model_config"] = current_model["config"]
     return current_model["model"]
 
@@ -31,7 +35,8 @@ def get_model_from_exp(exp: int, model_storage: Path = MODELS_PATH, device=DEVIC
 
 def get_default_models(
     exp_list: List[int] = [1000, 1001],
-    model_storage: Path = MODELS_PATH
+    model_storage: Path = MODELS_PATH,
+    keyboard_control: bool = False
 ) -> dict:
     model_dict = {}
     assert model_storage.exists(), f"Model storage {model_storage} does not exist"
@@ -43,5 +48,9 @@ def get_default_models(
             "config": config
         }
     exp_names = [name for name in model_dict.keys()]
-    interactive(model_name=(exp_names[0], exp_names))(model_selector)  # Create the model dialog
+    if keyboard_control:
+        model_control = KeyboardControl(0, [0, len(exp_names)-1], keydown="pagedown", keyup="pageup", modulo=True)
+    else:
+        model_control = (exp_names[0], exp_names)
+    interactive(model_name=model_control)(model_selector)  # Create the model dialog
     return model_dict

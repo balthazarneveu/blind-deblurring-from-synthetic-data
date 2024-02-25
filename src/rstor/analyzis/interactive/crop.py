@@ -45,11 +45,12 @@ def crop_selector(image, center_x=0.5, center_y=0.5, size=9., global_params={}):
     return
 
 
-interactive(
-    center_x=(0.5, [0., 1.], "cx", ["left", "right"]),
-    center_y=(0.5, [0., 1.], "cy", ["up", "down"]),
-    size=(9., [6., 13., 0.3], "crop size", ["+", "-"])
-)(crop_selector)
+def plug_crop_selector(num_pad: bool = False):
+    interactive(
+        center_x=(0.5, [0., 1.], "cx", ["4" if num_pad else "left", "6" if num_pad else "right"]),
+        center_y=(0.5, [0., 1.], "cy", ["8" if num_pad else "up", "2" if num_pad else "down"]),
+        size=(9., [6., 13., 0.3], "crop size", ["+", "-"])
+    )(crop_selector)
 
 
 def crop(*images, global_params={}):

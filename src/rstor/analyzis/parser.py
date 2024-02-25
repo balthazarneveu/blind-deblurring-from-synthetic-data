@@ -8,4 +8,5 @@ def get_parser(parser: argparse.ArgumentParser = None, help: str = "Live inferen
     parser.add_argument("-e", "--experiments", type=int, nargs="+", required=True,
                         help="Experience indexes to be used at inference time")
     parser.add_argument("-m", "--models-storage", type=str, help="Model storage path", default=MODELS_PATH)
+    parser.add_argument("-k", "--keyboard", action="store_true", help="Keyboard control - less sliders")
     return parser
