@@ -7,7 +7,7 @@ from typing import Tuple, Optional
 def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                       number_of_circles: int = -1,
                       background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
-                      colored: Optional[bool] = False,
+                      colored: Optional[bool] = True,
                       radius_mean: Optional[int] = -1,
                       radius_stddev: Optional[int] = -1,
                       seed: int = None) -> np.ndarray:
@@ -20,7 +20,7 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         If negative, it is computed based on the size. Defaults to -1.
         background_color (Optional[Tuple[float, float, float]], optional):
         background color of the chart. Defaults to gray (0.5, 0.5, 0.5).
-        colored (Optional[bool], optional): Whether to generate colored circles. Defaults to False.
+        colored (Optional[bool], optional): Whether to generate colored circles. Defaults to True.
         radius_mean (Optional[int], optional): mean radius of the circles. Defaults to -1. (=> -2)
         radius_stddev (Optional[int], optional): standard deviation of the radius of the circles.
         If negative, it is calculated based on the size. Defaults to -1.
