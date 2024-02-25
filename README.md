@@ -20,3 +20,10 @@ git clone https://github.com/balthazarneveu/blind-deblurring-from-synthetic-data
 cd blind-deblurring-from-synthetic-data
 pip install -e .
 ```
+
+
+## Live inference
+Compare several models with a live inference
+```bash
+python scripts/interactive_inference_synthetic.py -e 1000 1001
+```

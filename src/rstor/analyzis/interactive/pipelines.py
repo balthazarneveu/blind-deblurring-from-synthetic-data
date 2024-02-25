@@ -1,13 +1,14 @@
 from rstor.synthetic_data.interactive.interactive_dead_leaves import generate_deadleave
 from rstor.analyzis.interactive.crop import crop_selector, crop
-import sys
-from interactive_pipe import interactive_pipeline
 from rstor.analyzis.interactive.inference import infer
 from rstor.analyzis.interactive.degradation import degrade
-from rstor.analyzis.interactive.model_selection import model_selector, get_default_models
+from rstor.analyzis.interactive.model_selection import model_selector
+from rstor.analyzis.interactive.images import image_selector
+from typing import Tuple, List
+import numpy as np
 
 
-def deadleave_inference_pipeline(models_dict: dict):
+def deadleave_inference_pipeline(models_dict: dict) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     groundtruth = generate_deadleave()
     model = model_selector(models_dict)
     degraded_chart = degrade(groundtruth)
@@ -17,11 +18,10 @@ def deadleave_inference_pipeline(models_dict: dict):
     return groundtruth, degraded_chart, restored_chart
 
 
-def main(argv):
-    model_dict = get_default_models()
-    interactive_pipeline(gui="auto", cache=True, safe_input_buffer_deepcopy=False)(
-        deadleave_inference_pipeline)(model_dict)
-
-
-if __name__ == "__main__":
-    main(sys.argv[1:])
+def natural_inference_pipeline(input_image_list: List[np.ndarray], models_dict: dict):
+    model = model_selector(models_dict)
+    img = image_selector(input_image_list)
+    restored = infer(img, model)
+    crop_selector(restored)
+    img, restored = crop(img, restored)
+    return img, restored
