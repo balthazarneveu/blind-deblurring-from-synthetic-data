@@ -58,7 +58,8 @@ def main(argv):
         model.load_state_dict(torch.load(MODELS_PATH/f"{exp:04d}"/"best_model.pt"))
         model = model.to(DEVICE)
         model_dict[name] = model
-    interactive_pipeline(gui="auto")(deadleave_inference_pipeline)(model_dict)
+    interactive_pipeline(gui="auto", cache=True, safe_input_buffer_deepcopy=False)(
+        deadleave_inference_pipeline)(model_dict)
 
 
 if __name__ == "__main__":
