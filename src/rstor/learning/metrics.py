@@ -14,10 +14,8 @@ def compute_psnr(predic: torch.Tensor, target: torch.Tensor, clamp_mse=1e-10) ->
         torch.Tensor: The average PSNR value for the batch.
     """
     mse_per_image = torch.mean((predic - target) ** 2, dim=(-3, -2, -1))
-    print(mse_per_image)
     mse_per_image = torch.clamp(mse_per_image, min=clamp_mse)
     psnr_per_image = 10 * torch.log10(1 / mse_per_image)
-    print("psnr_per_image", psnr_per_image)
     average_psnr = torch.mean(psnr_per_image)
     return average_psnr
 
