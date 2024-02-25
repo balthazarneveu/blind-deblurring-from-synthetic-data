@@ -10,7 +10,7 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                       colored: Optional[bool] = False,
                       radius_mean: Optional[int] = -1,
                       radius_stddev: Optional[int] = -1,
-                      seed: int = 42) -> np.ndarray:
+                      seed: int = None) -> np.ndarray:
     """
     Generation of a dead leaves chart by splatting circles on top of each other.
 
@@ -24,7 +24,7 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         radius_mean (Optional[int], optional): mean radius of the circles. Defaults to -1. (=> -2)
         radius_stddev (Optional[int], optional): standard deviation of the radius of the circles.
         If negative, it is calculated based on the size. Defaults to -1.
-        seed (int, optional): seed for the random number generator. Defaults to 42.
+        seed (int, optional): seed for the random number generator. Defaults to None
 
     Returns:
         np.ndarray: generated dead leaves chart as a NumPy array.
