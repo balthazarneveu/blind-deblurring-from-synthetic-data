@@ -1,2 +1,4 @@
 RELU = "ReLU"
 LEAKY_RELU = "LeakyReLU"
+LOSS_MSE = "MSE"
+METRIC_PSNR = "PSNR"
