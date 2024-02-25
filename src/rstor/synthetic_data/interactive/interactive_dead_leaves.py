@@ -22,7 +22,7 @@ def generate_deadleave(
     seed=0
 ) -> np.ndarray:
     bg_color = (background_intensity, background_intensity, background_intensity)
-    chart = dead_leaves_chart((600, 600), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
+    chart = dead_leaves_chart((200, 200), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
                               seed=None if seed < 0 else seed)
     return chart
 
