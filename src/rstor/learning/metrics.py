@@ -20,7 +20,7 @@ def compute_psnr(predic: torch.Tensor, target: torch.Tensor, clamp_mse=1e-10) ->
     return average_psnr
 
 
-def compute_metric(predic: torch.Tensor, target: torch.Tensor) -> dict:
+def compute_metrics(predic: torch.Tensor, target: torch.Tensor) -> dict:
     """
     Compute the metrics for a batch of predicted and true values.
 
