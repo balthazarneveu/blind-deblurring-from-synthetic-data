@@ -4,3 +4,5 @@ opencv_python_headless==4.8.0.74
 Pillow>=9.0.1
 pytest>=6.2.5
 torch>=2.0.0
+tqdm
+interactive_pipe
