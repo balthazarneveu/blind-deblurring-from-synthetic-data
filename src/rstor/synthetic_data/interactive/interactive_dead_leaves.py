@@ -19,10 +19,11 @@ def generate_deadleave(
     colored: Optional[bool] = False,
     radius_mean: Optional[int] = -1,
     radius_stddev: Optional[int] = -1,
-    seed=0
+    seed=0,
+    ds=5,
 ) -> np.ndarray:
     bg_color = (background_intensity, background_intensity, background_intensity)
-    chart = dead_leaves_chart((512, 512), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
+    chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
                               seed=None if seed < 0 else seed)
     return chart
 
