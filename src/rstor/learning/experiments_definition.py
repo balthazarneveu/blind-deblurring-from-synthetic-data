@@ -79,7 +79,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 2], ds_factor=1, noise_stddev=[0., 50.])
     elif exp == 1007:
         config = default_experiment_vanilla(exp, n=60)
-        config[PRETTY_NAME] = "Vanilla small blur - noisy 0-50"
+        config[PRETTY_NAME] = "Vanilla large blur 0 - 6 - noisy 0-50"
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 6], ds_factor=1, noise_stddev=[0., 50.])
     else:
         raise ValueError(f"Experiment {exp} not found")
