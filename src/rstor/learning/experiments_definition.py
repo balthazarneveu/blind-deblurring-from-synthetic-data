@@ -50,11 +50,11 @@ def get_experiment_config(exp: int) -> dict:
     if exp == -1:
         config = default_experiment_vanilla(exp, length=10, n=2)
     elif exp == 1000:
-        config = default_experiment_vanilla(exp, n=100)
+        config = default_experiment_vanilla(exp, n=60)
         config[PRETTY_NAME] = "Vanilla small blur"
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 2], ds_factor=1, noise_stddev=[0., 0.])
     elif exp == 1001:
-        config = default_experiment_vanilla(exp, n=100)
+        config = default_experiment_vanilla(exp, n=60)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 6], ds_factor=1, noise_stddev=[0., 0.])
         config[PRETTY_NAME] = "Vanilla large blur 0 - 6"
     elif exp == 1002:
@@ -66,11 +66,11 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 2], ds_factor=5, noise_stddev=[0., 50.])
         config[PRETTY_NAME] = "Vanilla small blur - ds=5 - noisy 0-50"
     elif exp == 1004:
-        config = default_experiment_vanilla(exp, n=100)
+        config = default_experiment_vanilla(exp, n=60)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 0], ds_factor=1, noise_stddev=[0., 50.])
         config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
     elif exp == 1005:
-        config = default_experiment_vanilla(exp, bias=False, n=100)
+        config = default_experiment_vanilla(exp, bias=False, n=60)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 0], ds_factor=1, noise_stddev=[0., 50.])
         config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50 - bias free"
     else:
