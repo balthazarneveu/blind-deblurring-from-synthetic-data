@@ -34,6 +34,7 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
     """
     if seed is not None:
         random.seed(seed)
+        
     chart = np.multiply(background_color, np.ones((size[0], size[1], 3), dtype=np.float32))
     if number_of_circles < 0:
         number_of_circles = 4 * max(size)
@@ -65,8 +66,11 @@ def sample_rgb_values(size: int, seed: int = None) -> np.ndarray:
     Returns:
         np.ndarray: Random RGB values as a numpy array.
     """
-    np.random.seed(seed)
-    random_samples = np.random.uniform(size=(size, 3))
+    # https://github.com/numpy/numpy/issues/17079
+    # https://numpy.org/devdocs/reference/random/new-or-different.html#new-or-different
+    rng = np.random.default_rng(np.random.SeedSequence(seed))
+    
+    random_samples = rng.uniform(size=(size, 3))
     lab = (random_samples + np.array([0., -0.5, -0.5])[None]) * np.array([100., 127 * 2, 127 * 2])[None]
     rgb = cv2.cvtColor(lab[None, :].astype(np.float32), cv2.COLOR_Lab2RGB)
     return rgb.squeeze()
@@ -79,10 +83,8 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           colored: Optional[bool] = True,
                           radius_mean: Optional[int] = -1,
                           radius_stddev: Optional[int] = -1,
-                          seed: int = None) -> np.ndarray:
-    if seed is not None:
-        np.random.seed(seed)
-        
+                          seed: int = 0) -> np.ndarray:
+    rng = np.random.default_rng(np.random.SeedSequence(seed))
     
     if number_of_circles < 0:
         number_of_circles = 4 * max(size)
@@ -92,16 +94,16 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         radius_stddev = min(size) / 60.
     
     # Pick random circle centers and radia
-    center_x = np.random.randint(0, size[1], size=number_of_circles)
-    center_y = np.random.randint(0, size[0], size=number_of_circles)
+    center_x = rng.integers(0, size[1], size=number_of_circles)
+    center_y = rng.integers(0, size[0], size=number_of_circles)
     
-    radius = np.abs(np.random.normal(loc=radius_mean, scale=radius_stddev, size=number_of_circles)).round().astype(int)
+    radius = np.abs(rng.normal(loc=radius_mean, scale=radius_stddev, size=number_of_circles)).round().astype(int)
     
     # Pick random colors
     if colored:
-        color = sample_rgb_values(number_of_circles, seed=random.randint(0, 1e10)).astype(float)
+        color = sample_rgb_values(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
     else:
-        color = np.random.uniform(0.25, 0.75, size=(number_of_circles, 1))
+        color = rng.uniform(0.25, 0.75, size=(number_of_circles, 1))
     
     # Generate on gpu
     chart = _generate_dead_leaves(
