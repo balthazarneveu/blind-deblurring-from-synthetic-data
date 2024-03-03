@@ -65,7 +65,7 @@ def sample_rgb_values(size: int, seed: int = None) -> np.ndarray:
     Returns:
         np.ndarray: Random RGB values as a numpy array.
     """
-    random.seed(seed)
+    np.random.seed(seed)
     random_samples = np.random.uniform(size=(size, 3))
     lab = (random_samples + np.array([0., -0.5, -0.5])[None]) * np.array([100., 127 * 2, 127 * 2])[None]
     rgb = cv2.cvtColor(lab[None, :].astype(np.float32), cv2.COLOR_Lab2RGB)
@@ -81,7 +81,7 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           radius_stddev: Optional[int] = -1,
                           seed: int = None) -> np.ndarray:
     if seed is not None:
-        random.seed(seed)
+        np.random.seed(seed)
         
     
     if number_of_circles < 0:
