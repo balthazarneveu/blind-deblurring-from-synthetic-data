@@ -4,7 +4,9 @@ from typing import Tuple
 from rstor.synthetic_data.dead_leaves import dead_leaves_chart
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 import cv2
+from skimage.filters import gaussian
 import random
+import numpy as np
 
 
 class DeadLeavesDataset(Dataset):
@@ -14,6 +16,8 @@ class DeadLeavesDataset(Dataset):
         length: int = 1000,
         frozen_seed: int = None,  # useful for validation set!
         blur_kernel_half_size: int = [0, 2],
+        ds_factor: int = 5,
+        noise_stddev: float = [0., 50.],
         **config_dead_leaves
         # number_of_circles: int = -1,
         # background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
@@ -21,16 +25,24 @@ class DeadLeavesDataset(Dataset):
         # radius_mean: Optional[int] = -1,
         # radius_stddev: Optional[int] = -1,
     ):
-        self.frozen_seed = frozen_seed
 
-        self.size = size
+        self.frozen_seed = frozen_seed
+        self.ds_factor = ds_factor
+        self.size = (size[0]*ds_factor, size[1]*ds_factor)
         self.length = length
         self.config_dead_leaves = config_dead_leaves
         self.blur_kernel_half_size = blur_kernel_half_size
+        self.noise_stddev = noise_stddev
         if frozen_seed is not None:
             random.seed(self.frozen_seed)
             self.blur_kernel_half_size = [
-                (self.blur_kernel_half_size[0], self.blur_kernel_half_size[1]) for _ in range(length)]
+                (
+                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1]),
+                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
+                ) for _ in range(length)
+            ]
+            self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
+                                 random.random() + self.noise_stddev[0] for _ in range(length)]
 
     def __len__(self):
         return self.length
@@ -38,14 +50,26 @@ class DeadLeavesDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         seed = self.frozen_seed + idx if self.frozen_seed is not None else None
         chart = dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
+        if self.ds_factor > 1:
+            # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
+            sigma = 3/5
+            chart = gaussian(
+                chart, sigma=(sigma, sigma, 0), mode='nearest',
+                cval=0, preserve_range=True, truncate=4.0)
+            chart = chart[::self.ds_factor, ::self.ds_factor]
         if self.frozen_seed is not None:
             k_size_x, k_size_y = self.blur_kernel_half_size[idx]
+            std_dev = self.noise_stddev[idx]
         else:
             k_size_x = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
             k_size_y = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
+            std_dev = (self.noise_stddev[1] - self.noise_stddev[0]) * random.random() + self.noise_stddev[0]
         k_size_x = 2 * k_size_x + 1
         k_size_y = 2 * k_size_y + 1
         degraded_chart = cv2.GaussianBlur(chart, (k_size_x, k_size_y), 0)
+        if std_dev > 0.:
+            # print(f"Adding noise with std_dev={std_dev}...")
+            degraded_chart += (std_dev/255.)*np.random.randn(*degraded_chart.shape)
 
         def numpy_to_torch(ndarray):
             return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
