@@ -37,7 +37,7 @@ def generate_deadleave(
     else:
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean,
                                       radius_stddev,
-                                      seed=None if seed < 0 else seed)
+                                      seed=None if seed < 0 else seed).copy_to_host()
     return chart
 
 
