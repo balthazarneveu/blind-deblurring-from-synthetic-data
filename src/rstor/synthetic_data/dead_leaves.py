@@ -53,6 +53,9 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
             color = (gray, gray, gray)
         chart = cv2.circle(chart, (center_x, center_y), radius, color, -1)
     chart = chart.clip(0, 1)
+
+    if not colored:
+        chart = chart[:, :, 0, None] # return shape [h, w, 1] in gray mode
     return chart
 
 
@@ -142,15 +145,7 @@ def _generate_dead_leaves(size, centers, radia, colors, background):
         colors_,
         background)
 
-    # cuda.synchronize()
-    # print(f"-dead leaves gen (numba) {perf_counter() - t1}")
-    generation = generation_.copy_to_host()
-
-    # We systematically output rgb format
-    if nc == 1:
-        generation = np.repeat(generation, repeats=3, axis=-1)
-
-    return generation
+    return generation_
 
 
 @cuda.jit(cache=False)
