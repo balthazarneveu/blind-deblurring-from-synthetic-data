@@ -1,18 +1,25 @@
-from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.synthetic_data.dead_leaves import dead_leaves_chart, gpu_dead_leaves_chart
 import sys
 import numpy as np
 from interactive_pipe import interactive_pipeline, interactive
 from typing import Optional
 
 
-@interactive(
-    background_intensity=(0.5, [0., 1.]),
-    number_of_circles=(-1, [-1, 10000]),
-    colored=(False,),
-    radius_mean=(-1., [-1., 200]),
-    radius_stddev=(-1., [-1., 100.]),
-    seed=(0, [-1, 42])
-)
+def dead_leave_plugin(ds=1):
+    interactive(
+        background_intensity=(0.5, [0., 1.]),
+        number_of_circles=(-1, [-1, 10000]),
+        colored=(False,),
+        radius_mean=(-1., [-1., 200]),
+        radius_stddev=(-1., [-1., 100.]),
+        seed=(0, [-1, 42]),
+        ds=(ds, [ds, ds]),
+        numba_flag=(True,),
+        # ds=(ds, [1, 5])
+
+    )(generate_deadleave)
+
+
 def generate_deadleave(
     background_intensity: float = 0.5,
     number_of_circles: int = -1,
@@ -20,11 +27,17 @@ def generate_deadleave(
     radius_mean: Optional[int] = -1,
     radius_stddev: Optional[int] = -1,
     seed=0,
-    ds=5,
+    ds=3,
+    numba_flag=True
 ) -> np.ndarray:
     bg_color = (background_intensity, background_intensity, background_intensity)
-    chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
-                              seed=None if seed < 0 else seed)
+    if not numba_flag:
+        chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
+                                  seed=None if seed < 0 else seed)
+    else:
+        chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean,
+                                      radius_stddev,
+                                      seed=None if seed < 0 else seed)
     return chart
 
 
@@ -34,6 +47,7 @@ def deadleave_pipeline():
 
 
 def main(argv):
+    dead_leave_plugin(ds=1)
     interactive_pipeline(gui="auto")(deadleave_pipeline)()
 
 
