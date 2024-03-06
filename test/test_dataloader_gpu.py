@@ -1,8 +1,11 @@
 import torch
 from rstor.data.dataloader import DeadLeavesDatasetGPU
-
+import numba
 
 def test_dead_leaves_dataset_gpu():
+    if not numba.cuda.is_available():
+        return
+
     # Test case 1: Default parameters
     dataset = DeadLeavesDatasetGPU(noise_stddev=(0, 0), ds_factor=1)
     assert len(dataset) == 1000

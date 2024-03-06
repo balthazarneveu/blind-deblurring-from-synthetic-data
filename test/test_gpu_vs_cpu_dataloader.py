@@ -6,9 +6,13 @@ Created on Sun Mar  3 20:59:03 2024
 """
 from rstor.data.dataloader import DeadLeavesDataset, DeadLeavesDatasetGPU
 from time import perf_counter
+import numba
 
 
 def test_gpu_vs_cpu_dataloader():
+    if not numba.cuda.is_available():
+        return
+    
     n = 20
     print("\n")
 
