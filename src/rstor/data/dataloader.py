@@ -2,7 +2,8 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from typing import Tuple
-from rstor.synthetic_data.dead_leaves import dead_leaves_chart, gpu_dead_leaves_chart
+from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 import cv2
 from skimage.filters import gaussian
@@ -128,10 +129,18 @@ class DeadLeavesDatasetGPU(Dataset):
             self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
                                  random.random() + self.noise_stddev[0] for _ in range(length)]
 
-    def __len__(self):
+    def __len__(self) -> int:
         return self.length
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Get a single deadleave chart and its degraded version.
+
+        Args:
+            idx (int): index of the item to retrieve
+
+        Returns:
+            Tuple[torch.Tensor, torch.Tensor]: degraded chart, target chart
+        """
         seed = self.frozen_seed + idx if self.frozen_seed is not None else None
 
         # Return numba device array
