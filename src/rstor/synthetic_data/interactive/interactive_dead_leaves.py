@@ -1,4 +1,5 @@
-from rstor.synthetic_data.dead_leaves import dead_leaves_chart, gpu_dead_leaves_chart
+from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 import sys
 import numpy as np
 from interactive_pipe import interactive_pipeline, interactive
