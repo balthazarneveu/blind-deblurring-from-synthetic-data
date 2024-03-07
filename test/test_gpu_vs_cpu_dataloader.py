@@ -12,19 +12,18 @@ import numba
 def test_gpu_vs_cpu_dataloader():
     if not numba.cuda.is_available():
         return
-    
+
     n = 20
     print("\n")
 
     dataset = DeadLeavesDatasetGPU()
     t1 = perf_counter()
     for _ in range(n):
-        a = dataset[_]
+        _ = dataset[_]
     print(f"Mean time on {n} samples (numba) : {(perf_counter()-t1)/n}")
 
     dataset = DeadLeavesDataset()
     t1 = perf_counter()
     for _ in range(n):
-        a = dataset[_]
+        _ = dataset[_]
     print(f"Mean time on {n} samples (cv2): {(perf_counter()-t1)/n}")
- 

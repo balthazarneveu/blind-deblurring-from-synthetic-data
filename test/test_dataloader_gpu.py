@@ -2,6 +2,7 @@ import torch
 from rstor.data.dataloader import DeadLeavesDatasetGPU
 import numba
 
+
 def test_dead_leaves_dataset_gpu():
     if not numba.cuda.is_available():
         return
@@ -15,8 +16,8 @@ def test_dead_leaves_dataset_gpu():
 
     # Test case 2: Custom parameters
     dataset = DeadLeavesDatasetGPU(size=(256, 256), length=500, frozen_seed=42, number_of_circles=5,
-                                    background_color=(0.2, 0.4, 0.6), colored=True, radius_mean=10, radius_stddev=3,
-                                    noise_stddev=(0, 0), ds_factor=1)
+                                   background_color=(0.2, 0.4, 0.6), colored=True, radius_mean=10, radius_stddev=3,
+                                   noise_stddev=(0, 0), ds_factor=1)
     assert len(dataset) == 500
     assert dataset.size == (256, 256)
     assert dataset.frozen_seed == 42
