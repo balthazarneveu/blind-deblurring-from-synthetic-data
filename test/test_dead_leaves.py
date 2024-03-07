@@ -19,7 +19,7 @@ def test_dead_leaves_chart():
     assert chart.shape == (100, 100, 3)
 
     # Test case 4: Custom radius mean and stddev
-    chart = dead_leaves_chart(radius_mean=5, radius_stddev=2)
+    chart = dead_leaves_chart(radius_min=5, radius_alpha=2)
     assert isinstance(chart, np.ndarray)
     assert chart.shape == (100, 100, 3)
 
