@@ -14,7 +14,7 @@ def dead_leave_plugin(ds=1):
         radius_stddev=(-1., [-1., 100.]),
         seed=(0, [-1, 42]),
         ds=(ds, [ds, ds]),
-        numba_flag=(False,), # Default CPU to avoid issues by default
+        numba_flag=(False,),  # Default CPU to avoid issues by default
         # ds=(ds, [1, 5])
 
     )(generate_deadleave)
