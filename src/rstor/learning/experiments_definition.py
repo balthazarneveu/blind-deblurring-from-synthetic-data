@@ -115,7 +115,7 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
     elif exp == 2001:
-        config = presets_experiments(exp, n=60,  b=16, model_preset="UNEt")
+        config = presets_experiments(exp, n=60,  b=16, model_preset="UNet")
         config[PRETTY_NAME] = "UNEt denoise 0-50"
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
             blur_kernel_half_size=[0, 0],
