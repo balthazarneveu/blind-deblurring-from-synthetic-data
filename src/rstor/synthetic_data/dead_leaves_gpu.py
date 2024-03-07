@@ -10,23 +10,30 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           number_of_circles: int = -1,
                           background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
                           colored: Optional[bool] = True,
-                          radius_mean: Optional[int] = -1,
-                          radius_stddev: Optional[int] = -1,
+                          radius_min: Optional[int] = -1,
+                          radius_max: Optional[int] = -1,
+                          radius_alpha: Optional[int] = 3,
                           seed: int = 0) -> np.ndarray:
     rng = np.random.default_rng(np.random.SeedSequence(seed))
 
     if number_of_circles < 0:
         number_of_circles = 4 * max(size)
-    if radius_mean < 0.:
-        radius_mean = 2.
-    if radius_stddev < 0.:
-        radius_stddev = min(size) / 60.
+    if radius_min < 0.:
+        radius_min = 1.
+    if radius_max < 0.:
+        radius_max = 2000.
 
     # Pick random circle centers and radia
     center_x = rng.integers(0, size[1], size=number_of_circles)
     center_y = rng.integers(0, size[0], size=number_of_circles)
 
-    radius = np.abs(rng.normal(loc=radius_mean, scale=radius_stddev, size=number_of_circles)).round().astype(int)
+    radius = rng.uniform(
+        low=radius_max ** (1 - radius_alpha),
+        high=radius_min ** (1 - radius_alpha),
+        size=number_of_circles
+        )
+    radius = radius ** (-1/(radius_alpha - 1))
+    radius = radius.round().astype(int)
 
     # Pick random colors
     if colored:
@@ -85,9 +92,34 @@ def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
     if idx >= nx or idy >= ny:
         return
 
-    # Init with background
-    out = background[c]
+    for disc_id in range(n_discs):
+        dx = idx - centers[disc_id, 0]
+        dy = idy - centers[disc_id, 1]
+        dist_sq = dx*dx + dy*dy
 
+        # Naive thread diverging version
+        r = radia[disc_id]
+        r_sq = r*r
+
+        if dist_sq <= r_sq:
+            # Copy back to global memory
+            generation[idy, idx, c] = colors[disc_id, c]
+            return
+    
+    generation[idy, idx, c] = background[c]
+    
+@cuda.jit(cache=False)
+def OLD_cuda_dead_leaves_gen(generation, centers, radia, colors, background):
+    idx, idy, c = cuda.grid(3)
+    ny, nx, nc = generation.shape
+
+    n_discs = centers.shape[0]
+
+    # Out of bound threads
+    if idx >= nx or idy >= ny:
+        return
+
+    out = background[c]
     for disc_id in range(n_discs):
         dx = idx - centers[disc_id, 0]
         dy = idy - centers[disc_id, 1]
@@ -102,3 +134,4 @@ def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
 
     # Copy back to global memory
     generation[idy, idx, c] = out
+    
