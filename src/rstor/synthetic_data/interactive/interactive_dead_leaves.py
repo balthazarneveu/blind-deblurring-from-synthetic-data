@@ -14,7 +14,7 @@ def dead_leave_plugin(ds=1):
         radius_stddev=(-1., [-1., 100.]),
         seed=(0, [-1, 42]),
         ds=(ds, [ds, ds]),
-        numba_flag=(True,),
+        numba_flag=(False,), # Default CPU to avoid issues by default
         # ds=(ds, [1, 5])
 
     )(generate_deadleave)
@@ -38,6 +38,9 @@ def generate_deadleave(
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean,
                                       radius_stddev,
                                       seed=None if seed < 0 else seed).copy_to_host()
+    if chart.shape[-1] == 1:
+        chart = chart.repeat(3, axis=-1)
+        # Required to switch from colors to gray scale visualization.
     return chart
 
 
