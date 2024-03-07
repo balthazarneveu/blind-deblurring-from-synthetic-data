@@ -114,6 +114,14 @@ def get_experiment_config(exp: int) -> dict:
             ds_factor=1,
             noise_stddev=[0., 50.]
         )
+    elif exp == 2001:
+        config = presets_experiments(exp, n=60,  b=16, model_preset="UNEt")
+        config[PRETTY_NAME] = "UNEt denoise 0-50"
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
