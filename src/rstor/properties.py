@@ -1,6 +1,7 @@
 import torch
 RELU = "ReLU"
 LEAKY_RELU = "LeakyReLU"
+SIMPLE_GATE = "simple_gate"
 LOSS = "loss"
 LOSS_MSE = "MSE"
 METRIC_PSNR = "PSNR"
