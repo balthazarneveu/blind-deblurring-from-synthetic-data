@@ -93,11 +93,11 @@ def get_experiment_config(exp: int) -> dict:
     elif exp == 1004:
         config = presets_experiments(exp, n=60)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 0], ds_factor=1, noise_stddev=[0., 50.])
-        config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
+        config[PRETTY_NAME] = "Vanilla denoise only - ds=1 - noisy 0-50"
     elif exp == 1005:
         config = presets_experiments(exp, bias=False, n=60)
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(blur_kernel_half_size=[0, 0], ds_factor=1, noise_stddev=[0., 50.])
-        config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50 - bias free"
+        config[PRETTY_NAME] = "Vanilla denoise only - ds=1 - noisy 0-50 - bias free"
     elif exp == 1006:
         config = presets_experiments(exp, n=60)
         config[PRETTY_NAME] = "Vanilla small blur - noisy 0-50"
