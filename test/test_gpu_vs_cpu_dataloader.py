@@ -18,12 +18,12 @@ def test_gpu_vs_cpu_dataloader():
 
     dataset = DeadLeavesDatasetGPU()
     t1 = perf_counter()
-    for _ in range(n):
-        _ = dataset[_]
+    for i in range(n):
+        _ = dataset[i]
     print(f"Mean time on {n} samples (numba) : {(perf_counter()-t1)/n}")
 
     dataset = DeadLeavesDataset()
     t1 = perf_counter()
-    for _ in range(n):
-        _ = dataset[_]
+    for i in range(n):
+        _ = dataset[i]
     print(f"Mean time on {n} samples (cv2): {(perf_counter()-t1)/n}")

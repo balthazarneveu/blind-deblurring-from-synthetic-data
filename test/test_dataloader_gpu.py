@@ -16,7 +16,7 @@ def test_dead_leaves_dataset_gpu():
 
     # Test case 2: Custom parameters
     dataset = DeadLeavesDatasetGPU(size=(256, 256), length=500, frozen_seed=42, number_of_circles=5,
-                                   background_color=(0.2, 0.4, 0.6), colored=True, radius_mean=10, radius_stddev=3,
+                                   background_color=(0.2, 0.4, 0.6), colored=True, radius_min=1, radius_alpha=3,
                                    noise_stddev=(0, 0), ds_factor=1)
     assert len(dataset) == 500
     assert dataset.size == (256, 256)
@@ -25,8 +25,8 @@ def test_dead_leaves_dataset_gpu():
         'number_of_circles': 5,
         'background_color': (0.2, 0.4, 0.6),
         'colored': True,
-        'radius_mean': 10,
-        'radius_stddev': 3
+        'radius_min': 1,
+        'radius_alpha': 3
     }
 
     # Test case 3: Check item retrieval
@@ -40,3 +40,16 @@ def test_dead_leaves_dataset_gpu():
     item1, item_tgt1 = dataset1[0]
     item2, item_tgt2 = dataset2[0]
     assert torch.all(torch.eq(item1, item2))
+
+
+
+    # Test case 5: Visualize
+    dataset = DeadLeavesDatasetGPU(size=(256, 256), length=500, frozen_seed=44, number_of_circles=10_000,
+                                   background_color=(0.2, 0.4, 0.6), colored=True, radius_min=1, radius_alpha=3,
+                                   noise_stddev=(0, 0), ds_factor=1)
+    item, item_tgt = dataset[0]
+    import matplotlib.pyplot as plt
+    plt.figure()
+    plt.imshow(item.permute(1, 2, 0).detach().cpu())
+    plt.show()
+    print("done")
