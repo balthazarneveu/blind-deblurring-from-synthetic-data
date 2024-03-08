@@ -18,6 +18,9 @@ def sample_rgb_values(size: int, seed: int = None) -> np.ndarray:
     rng = np.random.default_rng(np.random.SeedSequence(seed))
 
     random_samples = rng.uniform(size=(size, 3))
-    lab = (random_samples + np.array([0., -0.5, -0.5])[None]) * np.array([100., 127 * 2, 127 * 2])[None]
+    # BIAS TOWARDS LESS SATURATED COLORS!
+    # random_samples[:, 1:] = 0.5 + (2*(random_samples[:, 1:]-0.5))**3 / 2.
+    # random_samples[:, 1:] = 0.5 + (2*(random_samples[:, 1:]-0.5))**4 * np.sign(random_samples[:, 1:]-0.5) / 2.
+    lab = (random_samples + np.array([0., -0.5, -0.5])[None]) * np.array([100., 127*2, 127*2])[None]
     rgb = cv2.cvtColor(lab[None, :].astype(np.float32), cv2.COLOR_Lab2RGB)
     return rgb.squeeze()
