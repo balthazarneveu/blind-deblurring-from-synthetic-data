@@ -13,7 +13,7 @@ def main(argv):
     args = parser.parse_args(argv)
     plug_crop_selector(num_pad=args.keyboard)
     model_dict = get_default_models(args.experiments, Path(args.models_storage))
-    dead_leave_plugin(ds=5)
+    dead_leave_plugin(ds=1)
     interactive_pipeline(gui="auto", cache=True, safe_input_buffer_deepcopy=False)(
         deadleave_inference_pipeline)(model_dict)
 

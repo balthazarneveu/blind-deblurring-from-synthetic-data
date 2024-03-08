@@ -14,10 +14,9 @@ def dead_leave_plugin(ds=1):
         radius_mean=(-1., [-1., 200]),
         radius_stddev=(-1., [-1., 100.]),
         seed=(0, [-1, 42]),
-        ds=(ds, [ds, ds]),
+        ds=(ds, [1, 5]),
         numba_flag=(False,),  # Default CPU to avoid issues by default
         # ds=(ds, [1, 5])
-
     )(generate_deadleave)
 
 
@@ -29,8 +28,10 @@ def generate_deadleave(
     radius_stddev: Optional[int] = -1,
     seed=0,
     ds=3,
-    numba_flag=True
+    numba_flag=True,
+    global_params={}
 ) -> np.ndarray:
+    global_params["ds_factor"] = ds
     bg_color = (background_intensity, background_intensity, background_intensity)
     if not numba_flag:
         chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
