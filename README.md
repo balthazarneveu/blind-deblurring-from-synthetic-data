@@ -58,6 +58,11 @@ Compare several models with a live inference
 python scripts/interactive_inference_synthetic.py -e 1000 1001
 ```
 
+
+```bash
+python scripts/interactive_inference_natural.py -e 1004  2000 -i "__kodak_dataset/*"
+```
+
 #### Metrics and batched inference
 - Compare 2 models (1004 = stacked conv) versus (2000 NafNet)
 - At various noise levels (random range of standard deviation between (a,b) - so (5,5) simply means $\sigma=5$ for instance).
@@ -68,3 +73,8 @@ python scripts/infer.py -e 1004 2000 -o __inference -t metrics --size "512,512 2
 ```
 
 Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
+
+
+
+##### Download image test datasets hosted on Kaggle 
+[Kodak](https://www.kaggle.com/datasets/sherylmehta/kodak-dataset/data) | [Gopro](https://www.kaggle.com/datasets/rahulbhalley/gopro-deblur)
