@@ -252,10 +252,21 @@ class UNet(NAFNet):
 
 
 if __name__ == '__main__':
-    enc_blks = [1, 1, 1, 4]
-    middle_blk_num = 1
-    dec_blks = [1, 1, 1, 28]
-    width = 16
+    tiny_recetive_field = False
+    if tiny_recetive_field:
+        enc_blks = [1, 1, 1, 4]
+        middle_blk_num = 1
+        dec_blks = [1, 1, 1, 28]
+        width = 16
+        # Receptive field is 208x208
+    else:
+        enc_blks = [1, 1, 1, 28]
+        middle_blk_num = 1
+        dec_blks = [1, 1, 1, 1]
+        width = 2
+        # Receptive field is 544x544
+    device = "cpu"
+
     for model_name in ["NAFNet", "UNet"]:
         if model_name == "NAFNet":
             model = NAFNet(
@@ -276,11 +287,13 @@ if __name__ == '__main__':
                 enc_blk_nums=enc_blks,
                 dec_blk_nums=dec_blks
             )
-        x = torch.randn(1, 3, 256, 256)
-        y = model(x)
+        model.to(device)
+        with torch.no_grad():
+            x = torch.randn(1, 3, 256, 256).to(device)
+            y = model(x)
 
-        # print(y.shape)
-        # print(y)
-        # print(model)
-        print(f"{model.count_parameters()/1E3:.2f}k parameters")
-        print(model.receptive_field())
+            # print(y.shape)
+            # print(y)
+            # print(model)
+            print(f"{model.count_parameters()/1E3:.2f}k parameters")
+        print(model.receptive_field(size=256 if tiny_recetive_field else 1024, device=device))
