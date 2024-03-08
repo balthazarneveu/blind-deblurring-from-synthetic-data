@@ -18,11 +18,13 @@ def downsample(chart: np.ndarray, sigma=3/5, global_params={}):
 
 
 @interactive(
-    k_size_x=(1, [0, 10]),
-    k_size_y=(1, [0, 10]),
+    k_size_x=(0, [0, 10]),
+    k_size_y=(0, [0, 10]),
     noise_stddev=(0., [0., 50.])
 )
 def degrade(chart: np.ndarray, k_size_x: int = 1, k_size_y: int = 1, noise_stddev=0.):
+    if k_size_x == 0 and k_size_y == 0:
+        blurred = chart
     blurred = cv2.GaussianBlur(chart, (2*k_size_x+1, 2*k_size_y+1), 0)
     if noise_stddev > 0.:
         noise = np.random.normal(0, noise_stddev/255., blurred.shape)

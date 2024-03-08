@@ -22,6 +22,7 @@ def deadleave_inference_pipeline(models_dict: dict) -> Tuple[np.ndarray, np.ndar
 def natural_inference_pipeline(input_image_list: List[np.ndarray], models_dict: dict):
     model = model_selector(models_dict)
     img = image_selector(input_image_list)
+    img = degrade(img)
     crop_selector(img)
     img = crop(img)
     restored = infer(img, model)
