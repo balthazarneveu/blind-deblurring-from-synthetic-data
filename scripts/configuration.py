@@ -10,3 +10,4 @@ TRAIN_SCRIPT = "scripts/train.py"  # Location of the training script
 
 ROOT_DIR = Path(__file__).parent
 OUTPUT_FOLDER_NAME = "__output"
+INFERENCE_FOLDER_NAME = "__inference"
