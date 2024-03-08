@@ -96,11 +96,25 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
         r = radia[disc_id]
         r_sq = r*r
 
-        if dist_sq <= r_sq:
+        if (disc_id % 4) == 0 and dist_sq <= r_sq:
             # Copy back to global memory
+            alpha = dist_sq/r_sq
+            generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+            return
+        elif (disc_id % 4) == 1 and (abs(dx)+abs(dy)) <= r:
+            # Copy back to global memory
+            alpha = dist_sq/r_sq
+            generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+            return
+        elif (disc_id % 4) == 2 and abs(dx) <= r and abs(dy) <= r:
             generation[idy, idx, c] = colors[disc_id, c]
             return
-
+        elif (disc_id % 200) == 3 and abs(dy) <= r//5:
+            generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+            return
+        elif (disc_id % 200) == 4 and abs(dx) <= r//5:
+            generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+            return
     generation[idy, idx, c] = background[c]
 
 
