@@ -13,11 +13,12 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           radius_min: Optional[int] = -1,
                           radius_max: Optional[int] = -1,
                           radius_alpha: Optional[int] = 3,
-                          seed: int = 0) -> np.ndarray:
+                          seed: int = 0,
+                          reverse=True) -> np.ndarray:
     rng = np.random.default_rng(np.random.SeedSequence(seed))
 
     if number_of_circles < 0:
-        number_of_circles = 4 * max(size)
+        number_of_circles = 30 * max(size)
     if radius_min < 0.:
         radius_min = 1.
     if radius_max < 0.:
@@ -47,13 +48,14 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         centers=np.stack((center_x, center_y), axis=-1),
         radia=radius,
         colors=color,
-        background=background_color
+        background=background_color,
+        reverse=reverse
     )
 
     return chart
 
 
-def _generate_dead_leaves(size, centers, radia, colors, background):
+def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
     assert centers.ndim == 2
     ny, nx = size
     nc = colors.shape[-1]
@@ -71,18 +73,26 @@ def _generate_dead_leaves(size, centers, radia, colors, background):
     blockspergrid_y = math.ceil(ny/threadsperblock[0])
     blockspergrid = (blockspergrid_x, blockspergrid_y, nc)
 
-    cuda_dead_leaves_gen[blockspergrid, threadsperblock](
-        generation_,
-        centers_,
-        radia_,
-        colors_,
-        background)
+    if reverse:
+        cuda_dead_leaves_gen_reversed[blockspergrid, threadsperblock](
+            generation_,
+            centers_,
+            radia_,
+            colors_,
+            background)
+    else:
+        cuda_dead_leaves_gen[blockspergrid, threadsperblock](
+            generation_,
+            centers_,
+            radia_,
+            colors_,
+            background)
 
     return generation_
 
 
 @cuda.jit(cache=False)
-def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
+def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background):
     idx, idy, c = cuda.grid(3)
     ny, nx, nc = generation.shape
 
@@ -109,7 +119,7 @@ def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
     generation[idy, idx, c] = background[c]
     
 @cuda.jit(cache=False)
-def OLD_cuda_dead_leaves_gen(generation, centers, radia, colors, background):
+def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
     idx, idy, c = cuda.grid(3)
     ny, nx, nc = generation.shape
 
