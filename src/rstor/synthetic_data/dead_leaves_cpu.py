@@ -1,20 +1,18 @@
 from typing import Tuple, Optional
 import numpy as np
 import cv2
+from rstor.synthetic_data.dead_leaves_sampler import define_dead_leaves_chart
 
 
-from rstor.synthetic_data.color_sampler import sample_rgb_values
-
-
-def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
-                      number_of_circles: int = -1,
-                      background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
-                      colored: Optional[bool] = True,
-                      radius_min: Optional[int] = -1,
-                      radius_max: Optional[int] = -1,
-                      radius_alpha: Optional[int] = 3,
-                      seed: int = None,
-                      reverse: Optional[bool] = True) -> np.ndarray:
+def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
+                          number_of_circles: int = -1,
+                          background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
+                          colored: Optional[bool] = True,
+                          radius_min: Optional[int] = -1,
+                          radius_max: Optional[int] = -1,
+                          radius_alpha: Optional[int] = 3,
+                          seed: int = None,
+                          reverse: Optional[bool] = True) -> np.ndarray:
     """
     Generation of a dead leaves chart by splatting circles on top of each other.
 
@@ -32,40 +30,21 @@ def dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         seed (int, optional): seed for the random number generator. Defaults to None
         reverse: (Optional[bool], optional): View circles from the back view
         by reversing order. Defaults to True.
-        WARNING: This option is extremely slow on GPU.
+        WARNING: This option is extremely slow on CPU.
 
     Returns:
         np.ndarray: generated dead leaves chart as a NumPy array.
     """
-    rng = np.random.default_rng(np.random.SeedSequence(seed))
-
-    if number_of_circles < 0:
-        number_of_circles = 30 * max(size)
-    if radius_min < 0.:
-        radius_min = 1.
-    if radius_max < 0.:
-        radius_max = 2000.
-
-    # Pick random circle centers and radii
-    center_x = rng.integers(0, size[1], size=number_of_circles)
-    center_y = rng.integers(0, size[0], size=number_of_circles)
-
-    # Sample from a power law distribution for the p(radius=r) = (r.clip(radius_min, radius_max))^(-alpha)
-
-    radius = rng.uniform(
-        low=radius_max ** (1 - radius_alpha),
-        high=radius_min ** (1 - radius_alpha),
-        size=number_of_circles
+    center_x, center_y, radius, color = define_dead_leaves_chart(
+        size,
+        number_of_circles,
+        colored,
+        radius_min,
+        radius_max,
+        radius_alpha,
+        seed
     )
-    # Using the change of variables formula for random variables.
-    radius = radius ** (-1/(radius_alpha - 1))
-    radius = radius.round().astype(int)
-
-    # Pick random colors
-    if colored:
-        color = sample_rgb_values(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
-    else:
-        color = rng.uniform(0.25, 0.75, size=(number_of_circles, 1))
+    if not colored:
         color = np.concatenate((color, color, color), axis=1)
 
     if reverse:

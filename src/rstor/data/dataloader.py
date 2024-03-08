@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 from typing import Tuple
-from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 import cv2
@@ -55,7 +55,7 @@ class DeadLeavesDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
         seed = self.frozen_seed + idx if self.frozen_seed is not None else None
-        chart = dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
+        chart = cpu_dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
         if self.ds_factor > 1:
             # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
             sigma = 3/5
