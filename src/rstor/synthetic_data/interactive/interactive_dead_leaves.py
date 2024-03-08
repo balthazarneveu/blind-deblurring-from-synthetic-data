@@ -11,11 +11,10 @@ def dead_leave_plugin(ds=1):
         background_intensity=(0.5, [0., 1.]),
         number_of_circles=(-1, [-1, 10000]),
         colored=(False,),
-        radius_mean=(-1., [-1., 200]),
-        radius_stddev=(-1., [-1., 100.]),
+        radius_alpha=(3, [1, 4]),
         seed=(0, [-1, 42]),
         ds=(ds, [1, 5]),
-        numba_flag=(False,),  # Default CPU to avoid issues by default
+        numba_flag=(True,),  # Default CPU to avoid issues by default
         # ds=(ds, [1, 5])
     )(generate_deadleave)
 
@@ -24,8 +23,7 @@ def generate_deadleave(
     background_intensity: float = 0.5,
     number_of_circles: int = -1,
     colored: Optional[bool] = False,
-    radius_mean: Optional[int] = -1,
-    radius_stddev: Optional[int] = -1,
+    radius_alpha: Optional[int] = 3,
     seed=0,
     ds=3,
     numba_flag=True,
@@ -34,11 +32,12 @@ def generate_deadleave(
     global_params["ds_factor"] = ds
     bg_color = (background_intensity, background_intensity, background_intensity)
     if not numba_flag:
-        chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean, radius_stddev,
+        chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
+                                  radius_alpha=radius_alpha,
                                   seed=None if seed < 0 else seed)
     else:
-        chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored, radius_mean,
-                                      radius_stddev,
+        chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
+                                      radius_alpha=radius_alpha,
                                       seed=None if seed < 0 else seed).copy_to_host()
     if chart.shape[-1] == 1:
         chart = chart.repeat(3, axis=-1)
