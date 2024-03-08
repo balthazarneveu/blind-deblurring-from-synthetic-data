@@ -20,6 +20,7 @@ from interactive_pipe.data_objects.image import Image
 from interactive_pipe.data_objects.parameters import Parameters
 from typing import List
 from itertools import product
+import pandas as pd
 ALL_TRACES = [TRACES_TARGET, TRACES_DEGRADED, TRACES_RESTORED, TRACES_METRICS]
 
 
@@ -59,6 +60,10 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
     img_index = 0
     if TRACES_ALL in traces:
         traces = ALL_TRACES
+    if TRACES_METRICS in traces:
+        all_metrics = {}
+    else:
+        all_metrics = None
     with torch.no_grad():
         model.eval()
         for img_degraded, img_target in tqdm(dataloader):
@@ -88,19 +93,31 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
                 if TRACES_TARGET in traces:
                     Image(img_target[idx]).save(save_path_targ)
                 if TRACES_METRICS in traces:
-                    current_metrics = {"in": {}, "out": {}}
+                    # current_metrics = {"in": {}, "out": {}}
+                    # for key, value in metrics_per_image.items():
+                    #     print(f"{key}: {value[idx]:.3f}")
+                    #     current_metrics["in"][key] = metrics_input_per_image[key][idx].item()
+                    #     current_metrics["out"][key] = metrics_per_image[key][idx].item()
+                    current_metrics = {}
                     for key, value in metrics_per_image.items():
-                        print(f"{key}: {value[idx]:.3f}")
-                        current_metrics["in"][key] = metrics_input_per_image[key][idx].item()
-                        current_metrics["out"][key] = metrics_per_image[key][idx].item()
+                        current_metrics["in_"+key] = metrics_input_per_image[key][idx].item()
+                        current_metrics["out_"+key] = metrics_per_image[key][idx].item()
                     current_metrics["degradation"] = degradation_parameters
                     current_metrics["size"] = (img_degraded.shape[-3], img_degraded.shape[-2])
                     current_metrics["deadleaves_config"] = config[DATALOADER][CONFIG_DEAD_LEAVES]
+                    current_metrics["restored"] = save_path_pred.relative_to(output_dir).as_posix()
+                    current_metrics["degraded"] = save_path_degr.relative_to(output_dir).as_posix()
+                    current_metrics["target"] = save_path_targ.relative_to(output_dir).as_posix()
+                    current_metrics["model"] = config[PRETTY_NAME]
+                    current_metrics["model_id"] = config[NAME]
                     Parameters(current_metrics).save(output_dir/f"{common_prefix}_metrics.json")
-                img_index += 1
+                    # for key, value in all_metrics.items():
 
+                    all_metrics[img_index] = current_metrics
+                img_index += 1
                 if number_of_images is not None and img_index > number_of_images:
-                    return
+                    return all_metrics
+    return all_metrics
 
 
 def infer_main(argv, batch_mode=False):
@@ -135,8 +152,16 @@ def infer_main(argv, batch_mode=False):
             output_dir = Path(args.output_dir)/(config[NAME] + "_" + config[PRETTY_NAME])
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            infer(model, dataloader[VALIDATION], config, device, output_dir,
-                  traces=args.traces, number_of_images=args.number_of_images)
+            all_metrics = infer(model, dataloader[VALIDATION], config, device, output_dir,
+                                traces=args.traces, number_of_images=args.number_of_images)
+            if all_metrics is not None:
+                print(all_metrics)
+                df = pd.DataFrame(all_metrics).T
+                prefix = f"{size[0]:04d}x{size[1]:04d}_noise=[{std_dev[0]:02d},{std_dev[1]:02d}]" + \
+                    f"_{config[PRETTY_NAME]}"
+                df.to_csv(output_dir/f"__{prefix}_metrics_.csv", index=False)
+                # Normally this could go into another script to handle the metrics analyzis
+                # print(df)
 
 
 if __name__ == "__main__":
