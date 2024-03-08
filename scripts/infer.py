@@ -67,14 +67,13 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
     with torch.no_grad():
         model.eval()
         for img_degraded, img_target in tqdm(dataloader):
-            # print(img_degraded.shape, img_target.shape)
             img_degraded = img_degraded.to(device)
             img_target = img_target.to(device)
             img_restored = model(img_degraded)
             if TRACES_METRICS in traces:
                 metrics_input_per_image = compute_metrics(img_degraded, img_target, reduction=REDUCTION_SKIP)
                 metrics_per_image = compute_metrics(img_restored, img_target, reduction=REDUCTION_SKIP)
-                print(metrics_per_image)
+                # print(metrics_per_image)
             img_degraded = to_image(img_degraded)
             img_target = to_image(img_target)
             img_restored = to_image(img_restored)
@@ -135,7 +134,7 @@ def infer_main(argv, batch_mode=False):
 
     for exp in args.experiments:
         model_dict = get_default_models([exp], Path(args.models_storage), interactive_flag=False)
-        print(list(model_dict.keys()))
+        # print(list(model_dict.keys()))
         current_model_dict = model_dict[list(model_dict.keys())[0]]
         model = current_model_dict["model"]
         config = current_model_dict["config"]
@@ -148,14 +147,15 @@ def infer_main(argv, batch_mode=False):
             config[DATALOADER][SIZE] = size
             config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
             dataloader = get_data_loader(config, frozen_seed=42)
-            print(config)
-            output_dir = Path(args.output_dir)/(config[NAME] + "_" + config[PRETTY_NAME])
+            # print(config)
+            output_dir = Path(args.output_dir)/(config[NAME] + "_" +
+                                                config[PRETTY_NAME]) #+ "_" + f"{size[0]:04d}x{size[1]:04d}")
             output_dir.mkdir(parents=True, exist_ok=True)
 
             all_metrics = infer(model, dataloader[VALIDATION], config, device, output_dir,
                                 traces=args.traces, number_of_images=args.number_of_images)
             if all_metrics is not None:
-                print(all_metrics)
+                # print(all_metrics)
                 df = pd.DataFrame(all_metrics).T
                 prefix = f"{size[0]:04d}x{size[1]:04d}_noise=[{std_dev[0]:02d},{std_dev[1]:02d}]" + \
                     f"_{config[PRETTY_NAME]}"
