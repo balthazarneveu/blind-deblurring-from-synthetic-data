@@ -64,7 +64,7 @@ python scripts/interactive_inference_synthetic.py -e 1000 1001
 - At various sizes (*results may depend on the input size due to receptive field considerations).
 - Limit the number of images (pretty stable for deadleaves) `-n 5`
 ```bash
-python scripts/infer.py -e 1004 2000 -o __inference_checksizes_metric_only -t metrics --size "512,512 256,256 128,128" --std-dev "1,1 5,5 10,10 20,20 30,30 40,40 50,50 80,80" -n 5
+python scripts/infer.py -e 1004 2000 -o __inference -t metrics --size "512,512 256,256 128,128" --std-dev "1,1 5,5 10,10 20,20 30,30 40,40 50,50 80,80" -n 5
 ```
 
 Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
