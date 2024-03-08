@@ -1,46 +1,31 @@
 from rstor.utils import DEFAULT_NUMPY_FLOAT_TYPE, THREADS_PER_BLOCK
 from typing import Tuple, Optional
-from rstor.synthetic_data.color_sampler import sample_rgb_values
+from rstor.synthetic_data.dead_leaves_cpu import define_dead_leaves_chart
 import numpy as np
 from numba import cuda
 import math
 
 
-def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
-                          number_of_circles: int = -1,
-                          background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
-                          colored: Optional[bool] = True,
-                          radius_min: Optional[int] = -1,
-                          radius_max: Optional[int] = -1,
-                          radius_alpha: Optional[int] = 3,
-                          seed: int = 0,
-                          reverse=True) -> np.ndarray:
-    rng = np.random.default_rng(np.random.SeedSequence(seed))
-
-    if number_of_circles < 0:
-        number_of_circles = 30 * max(size)
-    if radius_min < 0.:
-        radius_min = 1.
-    if radius_max < 0.:
-        radius_max = 2000.
-
-    # Pick random circle centers and radia
-    center_x = rng.integers(0, size[1], size=number_of_circles)
-    center_y = rng.integers(0, size[0], size=number_of_circles)
-
-    radius = rng.uniform(
-        low=radius_max ** (1 - radius_alpha),
-        high=radius_min ** (1 - radius_alpha),
-        size=number_of_circles
+def gpu_dead_leaves_chart(
+    size: Tuple[int, int] = (100, 100),
+        number_of_circles: int = -1,
+        background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
+        colored: Optional[bool] = True,
+        radius_min: Optional[int] = -1,
+        radius_max: Optional[int] = -1,
+        radius_alpha: Optional[int] = 3,
+        seed: int = None,
+        reverse=True
+) -> np.ndarray:
+    center_x, center_y, radius, color = define_dead_leaves_chart(
+        size,
+        number_of_circles,
+        colored,
+        radius_min,
+        radius_max,
+        radius_alpha,
+        seed
     )
-    radius = radius ** (-1/(radius_alpha - 1))
-    radius = radius.round().astype(int)
-
-    # Pick random colors
-    if colored:
-        color = sample_rgb_values(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
-    else:
-        color = rng.uniform(0.25, 0.75, size=(number_of_circles, 1))
 
     # Generate on gpu
     chart = _generate_dead_leaves(

@@ -1,4 +1,4 @@
-from rstor.synthetic_data.dead_leaves import dead_leaves_chart
+from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 import sys
 import numpy as np
@@ -32,9 +32,9 @@ def generate_deadleave(
     global_params["ds_factor"] = ds
     bg_color = (background_intensity, background_intensity, background_intensity)
     if not numba_flag:
-        chart = dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
-                                  radius_alpha=radius_alpha,
-                                  seed=None if seed < 0 else seed)
+        chart = cpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
+                                      radius_alpha=radius_alpha,
+                                      seed=None if seed < 0 else seed)
     else:
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
                                       radius_alpha=radius_alpha,
