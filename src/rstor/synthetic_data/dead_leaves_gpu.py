@@ -32,7 +32,7 @@ def gpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         low=radius_max ** (1 - radius_alpha),
         high=radius_min ** (1 - radius_alpha),
         size=number_of_circles
-        )
+    )
     radius = radius ** (-1/(radius_alpha - 1))
     radius = radius.round().astype(int)
 
@@ -115,9 +115,10 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
             # Copy back to global memory
             generation[idy, idx, c] = colors[disc_id, c]
             return
-    
+
     generation[idy, idx, c] = background[c]
-    
+
+
 @cuda.jit(cache=False)
 def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
     idx, idy, c = cuda.grid(3)
@@ -144,4 +145,3 @@ def cuda_dead_leaves_gen(generation, centers, radia, colors, background):
 
     # Copy back to global memory
     generation[idy, idx, c] = out
-    
