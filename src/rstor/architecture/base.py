@@ -1,6 +1,6 @@
 import torch
 from rstor.properties import LEAKY_RELU, RELU, SIMPLE_GATE
-from typing import Optional
+from typing import Optional, Tuple
 
 
 class SimpleGate(torch.nn.Module):
@@ -29,13 +29,20 @@ class BaseModel(torch.nn.Module):
     def count_parameters(self):
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
-    def receptive_field(self, channels: Optional[int] = 3, size: Optional[int] = 256) -> int:
+    def receptive_field(
+        self,
+        channels: Optional[int] = 3,
+        size: Optional[int] = 256,
+        device: Optional[str] = None
+    ) -> Tuple[int, int]:
         """Compute the receptive field of the model
 
         Returns:
             int: receptive field
         """
         input_tensor = torch.ones(1, channels, size, size, requires_grad=True)
+        if device is not None:
+            input_tensor = input_tensor.to(device)
         out = self.forward(input_tensor)
         grad = torch.zeros_like(out)
         grad[..., out.shape[-2]//2, out.shape[-1]//2] = torch.nan  # set NaN gradient at the middle of the output
