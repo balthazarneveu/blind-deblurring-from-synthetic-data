@@ -36,7 +36,8 @@ def get_model_from_exp(exp: int, model_storage: Path = MODELS_PATH, device=DEVIC
 def get_default_models(
     exp_list: List[int] = [1000, 1001],
     model_storage: Path = MODELS_PATH,
-    keyboard_control: bool = False
+    keyboard_control: bool = False,
+    interactive_flag: bool = True
 ) -> dict:
     model_dict = {}
     assert model_storage.exists(), f"Model storage {model_storage} does not exist"
@@ -48,9 +49,10 @@ def get_default_models(
             "config": config
         }
     exp_names = [name for name in model_dict.keys()]
-    if keyboard_control:
-        model_control = KeyboardControl(0, [0, len(exp_names)-1], keydown="pagedown", keyup="pageup", modulo=True)
-    else:
-        model_control = (exp_names[0], exp_names)
-    interactive(model_name=model_control)(model_selector)  # Create the model dialog
+    if interactive_flag:
+        if keyboard_control:
+            model_control = KeyboardControl(0, [0, len(exp_names)-1], keydown="pagedown", keyup="pageup", modulo=True)
+        else:
+            model_control = (exp_names[0], exp_names)
+        interactive(model_name=model_control)(model_selector)  # Create the model dialog
     return model_dict

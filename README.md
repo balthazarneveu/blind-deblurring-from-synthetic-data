@@ -23,6 +23,18 @@ pip install interactive-pipe
 pip install batch-processing
 ```
 
+
+### Supported tasks
+- Additive White Gaussian Noise denoising
+- Basic anisotropic Gaussian deblur
+- Deblur+Denoise
+
+:warning: Not supported yet - motion deblur / blind motion deblur
+
+### Supported network architectures
+- Stacked convolutions baseline
+- NAFNet 
+
 -------
 
 ## Training
@@ -45,3 +57,24 @@ Compare several models with a live inference
 ```bash
 python scripts/interactive_inference_synthetic.py -e 1000 1001
 ```
+
+
+```bash
+python scripts/interactive_inference_natural.py -e 1004  2000 -i "__kodak_dataset/*"
+```
+
+#### Metrics and batched inference
+- Compare 2 models (1004 = stacked conv) versus (2000 NafNet)
+- At various noise levels (random range of standard deviation between (a,b) - so (5,5) simply means $\sigma=5$ for instance).
+- At various sizes (*results may depend on the input size due to receptive field considerations).
+- Limit the number of images (pretty stable for deadleaves) `-n 5`
+```bash
+python scripts/infer.py -e 1004 2000 -o __inference -t metrics --size "512,512 256,256 128,128" --std-dev "1,1 5,5 10,10 20,20 30,30 40,40 50,50 80,80" -n 5
+```
+
+Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
+
+
+
+##### Download image test datasets hosted on Kaggle 
+[Kodak](https://www.kaggle.com/datasets/sherylmehta/kodak-dataset/data) | [Gopro](https://www.kaggle.com/datasets/rahulbhalley/gopro-deblur)

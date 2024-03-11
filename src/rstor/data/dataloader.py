@@ -49,6 +49,7 @@ class DeadLeavesDataset(Dataset):
             ]
             self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
                                  random.random() + self.noise_stddev[0] for _ in range(length)]
+        self.current_degradation = {}
 
     def __len__(self):
         return self.length
@@ -76,6 +77,10 @@ class DeadLeavesDataset(Dataset):
         if std_dev > 0.:
             # print(f"Adding noise with std_dev={std_dev}...")
             degraded_chart += (std_dev/255.)*np.random.randn(*degraded_chart.shape)
+        self.current_degradation[idx] = {
+            "blur_kernel_half_size": (k_size_x, k_size_y),
+            "noise_stddev": std_dev
+        }
 
         def numpy_to_torch(ndarray):
             return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
@@ -184,7 +189,8 @@ class DeadLeavesDatasetGPU(Dataset):
         return numpy_to_torch(degraded_chart), numpy_to_torch(chart)
 
 
-def get_data_loader(config, frozen_seed=42, **config_dead_leaves):
+def get_data_loader(config, frozen_seed=42):
+    # print(config[DATALOADER].get(CONFIG_DEAD_LEAVES, {}))
     dl_train = DeadLeavesDataset(config[DATALOADER][SIZE], config[DATALOADER][LENGTH][TRAIN],
                                  frozen_seed=None, **config[DATALOADER].get(CONFIG_DEAD_LEAVES, {}))
     dl_valid = DeadLeavesDataset(config[DATALOADER][SIZE], config[DATALOADER][LENGTH][VALIDATION],
