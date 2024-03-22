@@ -142,6 +142,36 @@ def get_experiment_config(exp: int) -> dict:
             ds_factor=1,
             noise_stddev=[0., 50.]
         )
+    elif exp == 2004:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet Light denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1, 1],
+        )
+    elif exp == 2005:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet TresLight denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
