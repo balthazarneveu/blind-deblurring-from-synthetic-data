@@ -144,6 +144,7 @@ def infer_main(argv, batch_mode=False):
                 ds_factor=1,
                 noise_stddev=list(std_dev)
             )
+            config[DATALOADER]["gpu_gen"] = True
             config[DATALOADER][SIZE] = size
             config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
             dataloader = get_data_loader(config, frozen_seed=42)
