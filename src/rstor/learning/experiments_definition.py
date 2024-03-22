@@ -125,8 +125,18 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
     elif exp == 2002:
-        config = presets_experiments(exp, n=30,  b=8, data_size=(512, 512), model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet denoise 512x512 0-50"
+        config = presets_experiments(exp, n=20,  b=8, data_size=(256, 256), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise  0-50 gpu dl 256x256"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+    elif exp == 2003:
+        config = presets_experiments(exp, n=20,  b=8, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
             blur_kernel_half_size=[0, 0],
             ds_factor=1,
