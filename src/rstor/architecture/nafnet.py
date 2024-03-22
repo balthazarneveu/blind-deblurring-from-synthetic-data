@@ -252,11 +252,11 @@ class UNet(NAFNet):
 
 
 if __name__ == '__main__':
-    tiny_recetive_field = False
+    tiny_recetive_field = True
     if tiny_recetive_field:
-        enc_blks = [1, 1, 1, 4]
+        enc_blks = [1, 1, 2]
         middle_blk_num = 1
-        dec_blks = [1, 1, 1, 28]
+        dec_blks = [1, 1, 1]
         width = 16
         # Receptive field is 208x208
     else:
