@@ -3,6 +3,7 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
                               PRETTY_NAME)
+from typing import Tuple
 
 
 def model_configurations(config, model_preset="StackedConvolutions", bias: bool = True) -> dict:
@@ -37,6 +38,7 @@ def presets_experiments(
     n: int = 50,
     bias: bool = True,
     length: int = 5000,
+    data_size: Tuple[int, int] = (128, 128),
     model_preset: str = "StackedConvolutions"
 ) -> dict:
     config = {
@@ -49,7 +51,7 @@ def presets_experiments(
             TRAIN: b,
             VALIDATION: b
         },
-        SIZE: (128, 128),  # (width, height)
+        SIZE: data_size,  # (width, height)
         LENGTH: {
             TRAIN: length,
             VALIDATION: 800
@@ -117,6 +119,14 @@ def get_experiment_config(exp: int) -> dict:
     elif exp == 2001:
         config = presets_experiments(exp, n=60,  b=16, model_preset="UNet")
         config[PRETTY_NAME] = "UNEt denoise 0-50"
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+    elif exp == 2002:
+        config = presets_experiments(exp, n=30,  b=8, data_size=(512, 512), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise 512x512 0-50"
         config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
             blur_kernel_half_size=[0, 0],
             ds_factor=1,
