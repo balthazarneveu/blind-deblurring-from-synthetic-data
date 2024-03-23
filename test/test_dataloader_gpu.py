@@ -1,5 +1,5 @@
 import torch
-from rstor.data.dataloader import DeadLeavesDatasetGPU
+from rstor.data.synthetic_dataloader import DeadLeavesDatasetGPU
 import numba
 
 

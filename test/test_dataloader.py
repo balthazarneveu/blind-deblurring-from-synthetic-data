@@ -1,5 +1,5 @@
 import torch
-from rstor.data.dataloader import DeadLeavesDataset
+from rstor.data.synthetic_dataloader import DeadLeavesDataset
 
 
 def test_dead_leaves_dataset():
