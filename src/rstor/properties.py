@@ -38,4 +38,5 @@ TRACES_DEGRADED = "degraded"
 TRACES_RESTORED = "restored"
 TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
+COLOR_SAMPLER = "div2k" # uniform, saturated, div2k
 

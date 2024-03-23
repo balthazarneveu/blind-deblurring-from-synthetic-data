@@ -24,7 +24,7 @@ def gpu_dead_leaves_chart(
         radius_min,
         radius_max,
         radius_alpha,
-        seed
+        seed,
     )
 
     # Generate on gpu

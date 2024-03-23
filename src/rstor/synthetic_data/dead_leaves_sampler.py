@@ -1,5 +1,6 @@
 from typing import Tuple, Optional
-from rstor.synthetic_data.color_sampler import sample_rgb_values
+from rstor.properties import COLOR_SAMPLER
+from rstor.synthetic_data.color_sampler import sample_uniform_rgb, sample_saturated_color, sample_div2k_color
 import numpy as np
 
 
@@ -10,7 +11,7 @@ def define_dead_leaves_chart(
     radius_min: Optional[int] = -1,
     radius_max: Optional[int] = -1,
     radius_alpha: Optional[int] = 3,
-    seed: int = None
+    seed: int = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Defines the geometric and color properties of the primitives in the dead leaves chart to later be sampled.
@@ -55,7 +56,14 @@ def define_dead_leaves_chart(
 
     # Pick random colors
     if colored:
-        color = sample_rgb_values(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        if COLOR_SAMPLER == "uniform":
+            color = sample_uniform_rgb(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        elif COLOR_SAMPLER == "saturated":
+            color = sample_saturated_color(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        elif COLOR_SAMPLER == "div2k":
+            color = sample_div2k_color(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        else:
+            raise NotImplementedError(f"Unknown color sampler {COLOR_SAMPLER}")
     else:
         color = rng.uniform(0.25, 0.75, size=(number_of_circles, 1))
     return center_x, center_y, radius, color

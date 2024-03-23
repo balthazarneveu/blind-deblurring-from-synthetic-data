@@ -98,7 +98,6 @@ class DeadLeavesDatasetGPU(Dataset):
 
 def generate(path, imin=0):
     dataset = DeadLeavesDatasetGPU(
-        # size=(b, 1_024, 1_024),
         size=(1_024, 1_024),
         length=1_000,
         frozen_seed=42,
@@ -113,13 +112,11 @@ def generate(path, imin=0):
         img = dataset[i]
         img = (img * 255).astype(np.uint8)
         out_path = path / "{:04d}.png".format(i)
-        # breakpoint()
         cv2.imwrite(out_path.as_posix(), img)
         
 
 def bench():
     dataset = DeadLeavesDatasetGPU(
-        # size=(b, 1_024, 1_024),
         size=(1_024, 1_024),
         length=1_000,
         frozen_seed=42,
