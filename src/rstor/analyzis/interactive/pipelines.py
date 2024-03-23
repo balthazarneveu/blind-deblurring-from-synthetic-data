@@ -34,7 +34,6 @@ def natural_inference_pipeline(input_image_list: List[np.ndarray], models_dict: 
     crop_selector(img_clean)
     groundtruth = crop(img_clean)
     degraded = degrade(groundtruth)
-    degraded = crop(degraded)
     restored = infer(degraded, model)
     configure_metrics()
     get_metrics_restored(restored, groundtruth)
