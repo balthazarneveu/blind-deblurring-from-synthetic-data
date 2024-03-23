@@ -40,9 +40,13 @@ pip install batch-processing
 ## Training
 
 ### Local training
+- Quick debugging / Local `python scripts/train.py -e -1 -nowb`
+- Local training. Define experiments in [experiments_definition.py](src/rstor/learning/experiments_definition.py)
 ```bash
 python scripts/train.py -e 1000
 ```
+
+
 ### Remote training
 :key: After setting up your kaggle credentials (`scripts/__kaggle_login.py` as explained [here](https://github.com/balthazarneveu/mva_pepites?tab=readme-ov-file#remote-training))
 

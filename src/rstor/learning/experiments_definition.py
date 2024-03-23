@@ -3,6 +3,7 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
                               PRETTY_NAME)
+from typing import Tuple
 
 
 def model_configurations(config, model_preset="StackedConvolutions", bias: bool = True) -> dict:
@@ -37,6 +38,7 @@ def presets_experiments(
     n: int = 50,
     bias: bool = True,
     length: int = 5000,
+    data_size: Tuple[int, int] = (128, 128),
     model_preset: str = "StackedConvolutions"
 ) -> dict:
     config = {
@@ -49,7 +51,7 @@ def presets_experiments(
             TRAIN: b,
             VALIDATION: b
         },
-        SIZE: (128, 128),  # (width, height)
+        SIZE: data_size,  # (width, height)
         LENGTH: {
             TRAIN: length,
             VALIDATION: 800
@@ -122,6 +124,87 @@ def get_experiment_config(exp: int) -> dict:
             ds_factor=1,
             noise_stddev=[0., 50.]
         )
+    elif exp == 2002:
+        config = presets_experiments(exp, n=20,  b=8, data_size=(256, 256), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise  0-50 gpu dl 256x256"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+    elif exp == 2003:
+        config = presets_experiments(exp, n=20,  b=8, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+    elif exp == 2004:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet Light denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1, 1],
+        )
+    elif exp == 2005:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet TresLight denoise  0-50 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+    elif exp == 2006:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet TresLight denoise  0-50 ds=5 gpu dl - 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=5,
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+    elif exp == 2007:
+        config = presets_experiments(exp, n=20,  b=16, data_size=(128, 128), model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise  0-50 gpu dl -ds=5 128x128"
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=5,
+            noise_stddev=[0., 50.]
+        )
+    elif exp == 1008:
+        config = presets_experiments(exp, n=20)
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=5,
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config

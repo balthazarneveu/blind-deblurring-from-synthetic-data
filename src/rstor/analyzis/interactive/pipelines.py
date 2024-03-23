@@ -4,7 +4,9 @@ from rstor.analyzis.interactive.inference import infer
 from rstor.analyzis.interactive.degradation import degrade, downsample
 from rstor.analyzis.interactive.model_selection import model_selector
 from rstor.analyzis.interactive.images import image_selector
+from rstor.analyzis.interactive.metrics import get_metrics
 from typing import Tuple, List
+from functools import partial
 import numpy as np
 
 
@@ -19,11 +21,18 @@ def deadleave_inference_pipeline(models_dict: dict) -> Tuple[np.ndarray, np.ndar
     return groundtruth, degraded_chart, restored_chart
 
 
+get_metrics_restored = partial(get_metrics, image_name="restored")
+get_metrics_degraded = partial(get_metrics, image_name="degraded")
+
+
 def natural_inference_pipeline(input_image_list: List[np.ndarray], models_dict: dict):
     model = model_selector(models_dict)
-    img = image_selector(input_image_list)
-    img = degrade(img)
-    crop_selector(img)
-    img = crop(img)
-    restored = infer(img, model)
-    return img, restored
+    img_clean = image_selector(input_image_list)
+    crop_selector(img_clean)
+    img_clean_crop = crop(img_clean)
+    degraded = degrade(img_clean_crop)
+    degraded = crop(degraded)
+    restored = infer(degraded, model)
+    get_metrics_restored(restored, img_clean_crop)
+    get_metrics_degraded(degraded, img_clean_crop)
+    return degraded, restored

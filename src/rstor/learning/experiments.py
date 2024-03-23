@@ -13,7 +13,7 @@ def get_training_content(
     optimizer, dl_dict = None, None
     if training_mode:
         optimizer = torch.optim.Adam(model.parameters(), **config[OPTIMIZER][PARAMS])
-        dl_dict = get_data_loader(config, device=device)
+        dl_dict = get_data_loader(config)
     return model, optimizer, dl_dict
 
 
