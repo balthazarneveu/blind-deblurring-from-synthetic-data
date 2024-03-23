@@ -83,6 +83,15 @@ def get_experiment_config(exp: int) -> dict:
         config = presets_experiments(exp, length=10, n=2)
     elif exp == -2:
         config = presets_experiments(exp, length=10, n=2, lpips=True)
+    elif exp == -3:
+        config = presets_experiments(exp, n=20)
+        config[DATALOADER]["gpu_gen"] = True
+        config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+            blur_kernel_half_size=[0, 0],
+            ds_factor=1,
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla denoise only - ds=1 - noisy 0-50"
     elif exp == 1000:
         config = presets_experiments(exp, n=60)
         config[PRETTY_NAME] = "Vanilla small blur"
