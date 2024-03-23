@@ -11,6 +11,7 @@ from rstor.properties import (
     TRAIN, VALIDATION, LR,
     LOSS_MSE, METRIC_PSNR, METRIC_SSIM,
     DEVICE, SCHEDULER_CONFIGURATION, SCHEDULER, REDUCELRONPLATEAU,
+    REDUCTION_SUM,
     SELECTED_METRICS,
     LOSS
 )
@@ -60,6 +61,7 @@ def training_loop(
         for met in chosen_metrics:
             current_metrics[met] = 0.
         for phase in [TRAIN, VALIDATION]:
+            total_elements = 0
             if phase == TRAIN:
                 model.train()
             else:
@@ -78,14 +80,20 @@ def training_loop(
                         optimizer.step()
                 current_metrics[phase] += loss.item()
                 if phase == VALIDATION:
-                    metrics_on_batch = compute_metrics(y_pred, y, chosen_metrics=chosen_metrics)
+                    metrics_on_batch = compute_metrics(
+                        y_pred,
+                        y,
+                        chosen_metrics=chosen_metrics,
+                        reduction=REDUCTION_SUM
+                    )
+                    total_elements += y_pred.shape[0]
                     for k, v in metrics_on_batch.items():
                         current_metrics[k] += v
 
             current_metrics[phase] /= (len(dl_dict[phase]))
             if phase == VALIDATION:
                 for k, v in metrics_on_batch.items():
-                    current_metrics[k] /= (len(dl_dict[phase]))
+                    current_metrics[k] /= total_elements
                     try:
                         current_metrics[k] = current_metrics[k].item()
                     except AttributeError:
