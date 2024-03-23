@@ -7,4 +7,6 @@ pytest>=6.2.5
 torch>=2.0.0
 tqdm
 numba
+torchvision
 torchmetrics
+
