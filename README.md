@@ -60,6 +60,7 @@ Available on [Weights and Biases](https://wandb.ai/balthazarneveu/deblur-from-de
 #### [Metrics](src/rstor/learning/metrics.py)
 - PSNR
 - [SSIM](https://arxiv.org/abs/2006.13846)
+- [LPIPS](https://richzhang.github.io/PerceptualSimilarity/)
 
 ## Live inference
 Compare several models with a live inference
