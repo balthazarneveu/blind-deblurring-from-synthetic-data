@@ -142,7 +142,8 @@ if __name__ == "__main__":
         config = default_config
         config["sampler"] = SAMPLER_NATURAL
         config["natural_image_list"] = sorted(
-            [file for file in (DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR").glob("*.png")])
+            list((DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR").glob("*.png"))
+        )
     else:
         raise NotImplementedError
     dataset = DeadLeavesDatasetGPU(**config)
