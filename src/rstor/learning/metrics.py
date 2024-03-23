@@ -1,13 +1,14 @@
 import torch
 from rstor.properties import METRIC_PSNR, METRIC_SSIM, REDUCTION_AVERAGE, REDUCTION_SKIP
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
+from typing import List, Optional
 
 
 def compute_psnr(
     predic: torch.Tensor,
     target: torch.Tensor,
     clamp_mse=1e-10,
-    reduction=REDUCTION_AVERAGE
+    reduction: Optional[str] = REDUCTION_AVERAGE
 ) -> torch.Tensor:
     """
     Compute the average PSNR metric for a batch of predicted and true values.
@@ -15,6 +16,7 @@ def compute_psnr(
     Args:
         predic (torch.Tensor): [N, C, H, W] predicted values.
         target (torch.Tensor): [N, C, H, W] target values.
+        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP.
 
     Returns:
         torch.Tensor: The average PSNR value for the batch.
@@ -34,7 +36,7 @@ def compute_psnr(
 def compute_ssim(
     predic: torch.Tensor,
     target: torch.Tensor,
-    reduction=REDUCTION_AVERAGE
+    reduction: Optional[str] = REDUCTION_AVERAGE
 ) -> torch.Tensor:
     """
     Compute the average SSIM metric for a batch of predicted and true values.
@@ -42,6 +44,7 @@ def compute_ssim(
     Args:
         predic (torch.Tensor): [N, C, H, W] predicted values.
         target (torch.Tensor): [N, C, H, W] target values.
+        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP.
 
     Returns:
         torch.Tensor: The average SSIM value for the batch.
@@ -56,14 +59,16 @@ def compute_ssim(
 def compute_metrics(
         predic: torch.Tensor,
         target: torch.Tensor,
-        reduction=REDUCTION_AVERAGE,
-        chosen_metrics=[METRIC_PSNR, METRIC_SSIM]) -> dict:
+        reduction: Optional[str] = REDUCTION_AVERAGE,
+        chosen_metrics: Optional[List[str]] = [METRIC_PSNR, METRIC_SSIM]) -> dict:
     """
     Compute the metrics for a batch of predicted and true values.
 
     Args:
         predic (torch.Tensor): [N, C, H, W] predicted values.
         target (torch.Tensor): [N, C, H, W] target values.
+        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP.
+        chosen_metrics (list): List of metrics to compute, default [METRIC_PSNR, METRIC_SSIM]
 
     Returns:
         dict: computed metrics.

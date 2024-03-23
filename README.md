@@ -39,7 +39,7 @@ pip install batch-processing
 
 ## Training
 
-### Local training
+#### Local training
 - Quick debugging / Local `python scripts/train.py -e -1 -nowb`
 - Local training. Define experiments in [experiments_definition.py](src/rstor/learning/experiments_definition.py)
 ```bash
@@ -47,14 +47,19 @@ python scripts/train.py -e 1000
 ```
 
 
-### Remote training
+#### Remote training
 :key: After setting up your kaggle credentials (`scripts/__kaggle_login.py` as explained [here](https://github.com/balthazarneveu/mva_pepites?tab=readme-ov-file#remote-training))
 
 ```bash
 python scripts/remote_training.py -e 1000 -u username -p
 ```
-### Monitoring and tracking
+#### Monitoring and tracking
 Available on [Weights and Biases](https://wandb.ai/balthazarneveu/deblur-from-deadleaves)
+
+
+#### [Metrics](src/rstor/learning/metrics.py)
+- PSNR
+- [SSIM](https://arxiv.org/abs/2006.13846)
 
 ## Live inference
 Compare several models with a live inference
