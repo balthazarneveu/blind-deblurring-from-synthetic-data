@@ -13,14 +13,13 @@ from typing import Tuple
 import numpy as np
 import torch
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from numba import cuda
 from tqdm import tqdm
-from skimage.filters import gaussian
 
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
-from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.utils import DEFAULT_TORCH_FLOAT_TYPE
+
 
 class DeadLeavesDatasetGPU(Dataset):
     def __init__(
@@ -28,20 +27,12 @@ class DeadLeavesDatasetGPU(Dataset):
         size: Tuple[int, int] = (128, 128),
         length: int = 1000,
         frozen_seed: int = None,  # useful for validation set!
-        blur_kernel_half_size: int = [0, 2],
         ds_factor: int = 5,
-        noise_stddev: float = [0., 50.],
         **config_dead_leaves
-        # number_of_circles: int = -1,
-        # background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
-        # colored: Optional[bool] = False,
-        # radius_mean: Optional[int] = -1,
-        # radius_stddev: Optional[int] = -1,
     ):
 
         self.frozen_seed = frozen_seed
         self.ds_factor = ds_factor
-        # self.size = (size[0], size[1]*ds_factor, size[2]*ds_factor)
         self.size = (size[0]*ds_factor, size[1]*ds_factor)
         self.length = length
         self.config_dead_leaves = config_dead_leaves
@@ -72,13 +63,12 @@ class DeadLeavesDatasetGPU(Dataset):
 
         # Return numba device array
         numba_chart = gpu_dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
-        
-        # breakpoint()
         if self.ds_factor > 1:
             # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
 
             # Downsample using strided gaussian conv (sigma=3/5)
-            th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE, device="cuda").permute(2, 0, 1)[None]  # [b, c, h, w]
+            th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE,
+                                       device="cuda").permute(2, 0, 1)[None]  # [b, c, h, w]
             th_chart = F.pad(th_chart,
                              pad=(2, 2, 0, 0),
                              mode="replicate")
@@ -96,6 +86,7 @@ class DeadLeavesDatasetGPU(Dataset):
 
         return chart
 
+
 def generate(path, imin=0):
     dataset = DeadLeavesDatasetGPU(
         # size=(b, 1_024, 1_024),
@@ -107,15 +98,14 @@ def generate(path, imin=0):
         radius_min=5,
         radius_max=2_000,
         ds_factor=5)
-    
-    
+
     for i in tqdm(range(imin, dataset.length)):
         img = dataset[i]
         img = (img * 255).astype(np.uint8)
         out_path = path / "{:04d}.png".format(i)
         # breakpoint()
         cv2.imwrite(out_path.as_posix(), img)
-        
+
 
 def bench():
     dataset = DeadLeavesDatasetGPU(
@@ -128,7 +118,7 @@ def bench():
         radius_min=5,
         radius_max=2_000,
         ds_factor=5)
-    
+
     print("dataset initialised")
     t1 = perf_counter()
     chart = dataset[0]
@@ -138,11 +128,9 @@ def bench():
     print(f"{d*1_000/60} min for 1_000")
     plt.imshow(chart)
     plt.show()
-    
-    
+
+
 if __name__ == "__main__":
     path = Path("__dataset/synth")
     path.mkdir(parents=True, exist_ok=True)
     generate(path)
-    
-    
