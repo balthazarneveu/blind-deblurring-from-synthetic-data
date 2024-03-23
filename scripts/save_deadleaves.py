@@ -16,9 +16,10 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from numba import cuda
 from tqdm import tqdm
-
+import argparse
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 from rstor.utils import DEFAULT_TORCH_FLOAT_TYPE
+from rstor.properties import DATASET_PATH, DATASET_DL_RANDOMRGB_1024
 
 
 class DeadLeavesDatasetGPU(Dataset):
@@ -87,7 +88,7 @@ class DeadLeavesDatasetGPU(Dataset):
         return chart
 
 
-def generate(path, imin=0):
+def generate_random_rgb(path, imin=0):
     dataset = DeadLeavesDatasetGPU(
         # size=(b, 1_024, 1_024),
         size=(1_024, 1_024),
@@ -131,6 +132,16 @@ def bench():
 
 
 if __name__ == "__main__":
-    path = Path("__dataset/synth")
+    argparser = argparse.ArgumentParser()
+    argparser.add_argument("-o", "--output-dir", type=str, default=str(DATASET_PATH))
+    argparser.add_argument("-n", "--name", type=str, default=DATASET_DL_RANDOMRGB_1024)
+    args = argparser.parse_args()
+    dataset_dir = args.output_dir
+    name = args.name
+    path = Path(dataset_dir)/name
     path.mkdir(parents=True, exist_ok=True)
-    generate(path)
+    print(path)
+    if name == DATASET_DL_RANDOMRGB_1024:
+        generate_random_rgb(path)
+    else:
+        raise NotImplementedError
