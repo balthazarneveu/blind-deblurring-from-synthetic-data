@@ -53,10 +53,10 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
     colors_ = cuda.to_device(colors)
 
     # Dispatch threads
-    threadsperblock = (THREADS_PER_BLOCK, THREADS_PER_BLOCK, 1)
+    threadsperblock = (THREADS_PER_BLOCK, THREADS_PER_BLOCK)
     blockspergrid_x = math.ceil(nx/threadsperblock[1])
     blockspergrid_y = math.ceil(ny/threadsperblock[0])
-    blockspergrid = (blockspergrid_x, blockspergrid_y, nc)
+    blockspergrid = (blockspergrid_x, blockspergrid_y)
 
     if reverse:
         cuda_dead_leaves_gen_reversed[blockspergrid, threadsperblock](
@@ -78,7 +78,7 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
 
 @cuda.jit(cache=False)
 def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background):
-    idx, idy, c = cuda.grid(3)
+    idx, idy = cuda.grid(2)
     ny, nx, nc = generation.shape
 
     n_discs = centers.shape[0]
@@ -98,10 +98,11 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
 
         if dist_sq <= r_sq:
             # Copy back to global memory
-            generation[idy, idx, c] = colors[disc_id, c]
+            for c in range(nc):
+                generation[idy, idx, c] = colors[disc_id, c]
             return
-
-    generation[idy, idx, c] = background[c]
+    for c in range(nc):
+        generation[idy, idx, c] = background[c]
 
 
 @cuda.jit(cache=False)
