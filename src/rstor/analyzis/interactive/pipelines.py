@@ -4,7 +4,7 @@ from rstor.analyzis.interactive.inference import infer
 from rstor.analyzis.interactive.degradation import degrade, downsample
 from rstor.analyzis.interactive.model_selection import model_selector
 from rstor.analyzis.interactive.images import image_selector
-from rstor.analyzis.interactive.metrics import get_metrics
+from rstor.analyzis.interactive.metrics import get_metrics, configure_metrics
 from typing import Tuple, List
 from functools import partial
 import numpy as np
@@ -33,6 +33,7 @@ def natural_inference_pipeline(input_image_list: List[np.ndarray], models_dict: 
     degraded = degrade(img_clean_crop)
     degraded = crop(degraded)
     restored = infer(degraded, model)
+    configure_metrics()
     get_metrics_restored(restored, img_clean_crop)
     get_metrics_degraded(degraded, img_clean_crop)
     return degraded, restored
