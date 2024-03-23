@@ -23,15 +23,16 @@ def compute_psnr(
     Returns:
         torch.Tensor: The average PSNR value for the batch.
     """
-    mse_per_image = torch.mean((predic - target) ** 2, dim=(-3, -2, -1))
-    mse_per_image = torch.clamp(mse_per_image, min=clamp_mse)
-    psnr_per_image = 10 * torch.log10(1 / mse_per_image)
-    if reduction == REDUCTION_AVERAGE:
-        average_psnr = torch.mean(psnr_per_image)
-    elif reduction == REDUCTION_SKIP:
-        average_psnr = psnr_per_image
-    else:
-        raise ValueError(f"Unknown reduction {reduction}")
+    with torch.no_grad():
+        mse_per_image = torch.mean((predic - target) ** 2, dim=(-3, -2, -1))
+        mse_per_image = torch.clamp(mse_per_image, min=clamp_mse)
+        psnr_per_image = 10 * torch.log10(1 / mse_per_image)
+        if reduction == REDUCTION_AVERAGE:
+            average_psnr = torch.mean(psnr_per_image)
+        elif reduction == REDUCTION_SKIP:
+            average_psnr = psnr_per_image
+        else:
+            raise ValueError(f"Unknown reduction {reduction}")
     return average_psnr
 
 
@@ -51,10 +52,12 @@ def compute_ssim(
     Returns:
         torch.Tensor: The average SSIM value for the batch.
     """
-    ssim = SSIM(data_range=1.0, reduction=None if reduction == REDUCTION_SKIP else "elementwise_mean").to(predic.device)
-    assert predic.shape == target.shape, f"{predic.shape} != {target.shape}"
-    assert predic.device == target.device, f"{predic.device} != {target.device}"
-    ssim_value = ssim(predic, target)
+    with torch.no_grad():
+        ssim = SSIM(data_range=1.0, reduction=None if reduction ==
+                    REDUCTION_SKIP else "elementwise_mean").to(predic.device)
+        assert predic.shape == target.shape, f"{predic.shape} != {target.shape}"
+        assert predic.device == target.device, f"{predic.device} != {target.device}"
+        ssim_value = ssim(predic, target)
     return ssim_value
 
 
