@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from rstor.data.augmentation import augment_flip
 from rstor.properties import DEVICE, AUGMENTATION_FLIP
+from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 from typing import Tuple, Optional, Union
 from torchvision.transforms import RandomCrop
 from pathlib import Path
@@ -29,8 +30,10 @@ class RestorationDataset(Dataset):
         self.augmentation_list = augmentation_list
         self.device = device
         self.freeze = freeze
-        img_list = sorted(list(images_path.glob("*.png")))  # [:128]
-        self.path_list = img_list
+        if not isinstance(images_path, list):
+            self.path_list = sorted(list(images_path.glob("*.png")))
+        else:
+            self.path_list = images_path
         self.n_samples = len(self.path_list)
         # If we can preload everything in memory, we can do it
         if preloaded:
@@ -57,7 +60,8 @@ class RestorationDataset(Dataset):
             img_data = augment_flip(img_data)
         img_data = self.cropper(img_data)
         img_data = img_data.float()/255.
-        return img_data
+        degraded_img = img_data/2.
+        return degraded_img, img_data
 
     def __len__(self):
         return self.n_samples
