@@ -19,7 +19,7 @@ from tqdm import tqdm
 import argparse
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 from rstor.utils import DEFAULT_TORCH_FLOAT_TYPE
-from rstor.properties import DATASET_PATH, DATASET_DL_RANDOMRGB_1024
+from rstor.properties import DATASET_PATH, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, SAMPLER_NATURAL, SAMPLER_UNIFORM
 
 
 class DeadLeavesDatasetGPU(Dataset):
@@ -88,17 +88,7 @@ class DeadLeavesDatasetGPU(Dataset):
         return chart
 
 
-def generate_random_rgb(path, imin=0):
-    dataset = DeadLeavesDatasetGPU(
-        size=(1_024, 1_024),
-        length=1_000,
-        frozen_seed=42,
-        background_color=(0.2, 0.4, 0.6),
-        colored=True,
-        radius_min=5,
-        radius_max=2_000,
-        ds_factor=5)
-
+def generate_images(path: Path, dataset: Dataset, imin=0):
     for i in tqdm(range(imin, dataset.length)):
         img = dataset[i]
         img = (img * 255).astype(np.uint8)
@@ -106,16 +96,7 @@ def generate_random_rgb(path, imin=0):
         cv2.imwrite(out_path.as_posix(), img)
 
 
-def bench():
-    dataset = DeadLeavesDatasetGPU(
-        size=(1_024, 1_024),
-        length=1_000,
-        frozen_seed=42,
-        background_color=(0.2, 0.4, 0.6),
-        colored=True,
-        radius_min=5,
-        radius_max=2_000,
-        ds_factor=5)
+def bench(dataset):
 
     print("dataset initialised")
     t1 = perf_counter()
@@ -131,7 +112,23 @@ def bench():
 if __name__ == "__main__":
     argparser = argparse.ArgumentParser()
     argparser.add_argument("-o", "--output-dir", type=str, default=str(DATASET_PATH))
-    argparser.add_argument("-n", "--name", type=str, default=DATASET_DL_RANDOMRGB_1024)
+    argparser.add_argument(
+        "-n", "--name", type=str,
+        choices=[DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024],
+        default=DATASET_DL_RANDOMRGB_1024
+    )
+    argparser.add_argument("-b", "--benchmark", action="store_true")
+    default_config = dict(
+        size=(1_024, 1_024),
+        length=1_000,
+        frozen_seed=42,
+        background_color=(0.2, 0.4, 0.6),
+        colored=True,
+        radius_min=5,
+        radius_max=2_000,
+        ds_factor=5,
+    )
+
     args = argparser.parse_args()
     dataset_dir = args.output_dir
     name = args.name
@@ -139,6 +136,17 @@ if __name__ == "__main__":
     # print(path)
     path.mkdir(parents=True, exist_ok=True)
     if name == DATASET_DL_RANDOMRGB_1024:
-        generate_random_rgb(path)
+        config = default_config
+        config["sampler"] = SAMPLER_UNIFORM
+    elif name == DATASET_DL_DIV2K_1024:
+        config = default_config
+        config["sampler"] = SAMPLER_NATURAL
+        config["natural_image_list"] = sorted(
+            [file for file in (DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR").glob("*.png")])
     else:
         raise NotImplementedError
+    dataset = DeadLeavesDatasetGPU(**config)
+    if args.benchmark:
+        bench(dataset)
+    else:
+        generate_images(path, dataset)
