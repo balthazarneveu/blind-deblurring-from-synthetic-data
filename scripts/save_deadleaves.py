@@ -136,8 +136,7 @@ if __name__ == "__main__":
     dataset_dir = args.output_dir
     name = args.name
     path = Path(dataset_dir)/name
-    print(path)
-    breakpoint()
+    # print(path)
     path.mkdir(parents=True, exist_ok=True)
     if name == DATASET_DL_RANDOMRGB_1024:
         generate_random_rgb(path)
