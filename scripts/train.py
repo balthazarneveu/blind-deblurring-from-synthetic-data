@@ -9,7 +9,7 @@ from tqdm import tqdm
 from rstor.properties import (
     ID, NAME, NB_EPOCHS,
     TRAIN, VALIDATION, LR,
-    LOSS_MSE, METRIC_PSNR,
+    LOSS_MSE, METRIC_PSNR, METRIC_SSIM,
     DEVICE, SCHEDULER_CONFIGURATION, SCHEDULER, REDUCELRONPLATEAU,
     LOSS
 )
@@ -46,13 +46,21 @@ def training_loop(
     scheduler=None,
     device: str = DEVICE,
     wandb_flag: bool = False,
-    output_dir: Path = None
+    output_dir: Path = None,
+    chosen_metrics: list = [
+        METRIC_PSNR,
+        METRIC_SSIM
+    ]
 ):
     best_accuracy = 0.
     for n_epoch in tqdm(range(config[NB_EPOCHS])):
-        current_metrics = {TRAIN: 0., VALIDATION: 0., LR: optimizer.param_groups[0]['lr'],
-                           METRIC_PSNR: 0.
-                           }
+        current_metrics = {
+            TRAIN: 0.,
+            VALIDATION: 0.,
+            LR: optimizer.param_groups[0]['lr'],
+        }
+        for met in chosen_metrics:
+            current_metrics[met] = 0.
         for phase in [TRAIN, VALIDATION]:
             if phase == TRAIN:
                 model.train()
@@ -72,7 +80,7 @@ def training_loop(
                         optimizer.step()
                 current_metrics[phase] += loss.item()
                 if phase == VALIDATION:
-                    metrics_on_batch = compute_metrics(y_pred, y)
+                    metrics_on_batch = compute_metrics(y_pred, y, chosen_metrics=chosen_metrics)
                     for k, v in metrics_on_batch.items():
                         current_metrics[k] += v
 

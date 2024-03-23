@@ -1,6 +1,6 @@
 import torch
 from rstor.properties import METRIC_PSNR, METRIC_SSIM, REDUCTION_AVERAGE, REDUCTION_SKIP
-from torchmetrics import StructuralSimilarityIndexMeasure as SSIM
+from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 
 
 def compute_psnr(
@@ -46,12 +46,18 @@ def compute_ssim(
     Returns:
         torch.Tensor: The average SSIM value for the batch.
     """
-    ssim = SSIM(data_range=1.0, reduction=None if reduction == REDUCTION_SKIP else "elementwise_mean")
+    ssim = SSIM(data_range=1.0, reduction=None if reduction == REDUCTION_SKIP else "elementwise_mean").to(predic.device)
+    assert predic.shape == target.shape, f"{predic.shape} != {target.shape}"
+    assert predic.device == target.device, f"{predic.device} != {target.device}"
     ssim_value = ssim(predic, target)
     return ssim_value
 
 
-def compute_metrics(predic: torch.Tensor, target: torch.Tensor, reduction=REDUCTION_AVERAGE) -> dict:
+def compute_metrics(
+        predic: torch.Tensor,
+        target: torch.Tensor,
+        reduction=REDUCTION_AVERAGE,
+        chosen_metrics=[METRIC_PSNR, METRIC_SSIM]) -> dict:
     """
     Compute the metrics for a batch of predicted and true values.
 
@@ -62,11 +68,11 @@ def compute_metrics(predic: torch.Tensor, target: torch.Tensor, reduction=REDUCT
     Returns:
         dict: computed metrics.
     """
-    average_psnr = compute_psnr(predic, target, reduction=reduction)
-    metrics = {
-        METRIC_PSNR: average_psnr.item() if reduction != REDUCTION_SKIP else average_psnr
-    }
-
-    ssim_value = compute_ssim(predic, target, reduction=reduction)
-    metrics[METRIC_SSIM] = ssim_value.item() if reduction != REDUCTION_SKIP else ssim_value
+    metrics = {}
+    if METRIC_PSNR in chosen_metrics:
+        average_psnr = compute_psnr(predic, target, reduction=reduction)
+        metrics[METRIC_PSNR] = average_psnr.item() if reduction != REDUCTION_SKIP else average_psnr
+    if METRIC_SSIM in chosen_metrics:
+        ssim_value = compute_ssim(predic, target, reduction=reduction)
+        metrics[METRIC_SSIM] = ssim_value.item() if reduction != REDUCTION_SKIP else ssim_value
     return metrics
