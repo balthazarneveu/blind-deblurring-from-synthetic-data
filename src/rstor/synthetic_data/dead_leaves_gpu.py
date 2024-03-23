@@ -1,4 +1,5 @@
 from rstor.utils import DEFAULT_NUMPY_FLOAT_TYPE, THREADS_PER_BLOCK
+from rstor.properties import SAMPLER_UNIFORM
 from typing import Tuple, Optional
 from rstor.synthetic_data.dead_leaves_cpu import define_dead_leaves_chart
 import numpy as np
@@ -15,7 +16,9 @@ def gpu_dead_leaves_chart(
         radius_max: Optional[int] = -1,
         radius_alpha: Optional[int] = 3,
         seed: int = None,
-        reverse=True
+        reverse=True,
+        sampler=SAMPLER_UNIFORM,
+        natural_image_list=None
 ) -> np.ndarray:
     center_x, center_y, radius, color = define_dead_leaves_chart(
         size,
@@ -24,7 +27,9 @@ def gpu_dead_leaves_chart(
         radius_min,
         radius_max,
         radius_alpha,
-        seed
+        seed,
+        sampler=sampler,
+        natural_image_list=natural_image_list
     )
 
     # Generate on gpu

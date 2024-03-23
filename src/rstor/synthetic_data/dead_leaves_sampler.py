@@ -1,6 +1,8 @@
-from typing import Tuple, Optional
-from rstor.synthetic_data.color_sampler import sample_rgb_values
+from typing import Tuple, Optional, List
+from rstor.properties import SAMPLER_SATURATED, SAMPLER_NATURAL, SAMPLER_UNIFORM
+from rstor.synthetic_data.color_sampler import sample_uniform_rgb, sample_saturated_color, sample_color_from_images
 import numpy as np
+from pathlib import Path
 
 
 def define_dead_leaves_chart(
@@ -10,7 +12,9 @@ def define_dead_leaves_chart(
     radius_min: Optional[int] = -1,
     radius_max: Optional[int] = -1,
     radius_alpha: Optional[int] = 3,
-    seed: int = None
+    seed: int = None,
+    sampler=SAMPLER_UNIFORM,
+    natural_image_list: Optional[List[Path]] = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Defines the geometric and color properties of the primitives in the dead leaves chart to later be sampled.
@@ -55,7 +59,16 @@ def define_dead_leaves_chart(
 
     # Pick random colors
     if colored:
-        color = sample_rgb_values(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        if sampler == SAMPLER_UNIFORM:
+            color = sample_uniform_rgb(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        elif sampler == SAMPLER_SATURATED:
+            color = sample_saturated_color(number_of_circles, seed=rng.integers(0, 1e10)).astype(float)
+        elif sampler == SAMPLER_NATURAL:
+            assert natural_image_list is not None, "Please provide a list of images to sample colors from."
+            color = sample_color_from_images(number_of_circles, seed=rng.integers(0, 1e10),
+                                             path_to_images=natural_image_list).astype(float)
+        else:
+            raise NotImplementedError(f"Unknown color sampler {sampler}")
     else:
         color = rng.uniform(0.25, 0.75, size=(number_of_circles, 1))
     return center_x, center_y, radius, color
