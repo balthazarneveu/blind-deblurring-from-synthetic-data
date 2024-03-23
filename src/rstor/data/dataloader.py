@@ -158,12 +158,12 @@ class DeadLeavesDatasetGPU(Dataset):
 
         # Return numba device array
         numba_chart = gpu_dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
+        th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE, device="cuda")[
+                None].permute(0, 3, 1, 2)  # [1, c, h, w]
         if self.ds_factor > 1:
             # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
 
             # Downsample using strided gaussian conv (sigma=3/5)
-            th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE, device="cuda")[
-                None].permute(0, 3, 1, 2)  # [1, c, h, w]
             th_chart = F.pad(th_chart,
                              pad=(2, 2, 0, 0),
                              mode="replicate")
@@ -196,14 +196,14 @@ class DeadLeavesDatasetGPU(Dataset):
         #     # print(f"Adding noise with std_dev={std_dev}...")
         #     degraded_chart += (std_dev/255.)*np.random.randn(*degraded_chart.shape)
         self.current_degradation[idx] = {
-            "blur_kernel_id": self.degradation_blur["blur_kernel_id"][idx],
-            "noise_stddev": self.degradation_noise["noise_stddev"][idx]
+            "blur_kernel_id": self.degradation_blur.current_degradation[idx]["blur_kernel_id"],
+            "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
         # def numpy_to_torch(ndarray):
         #     return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
         # return numpy_to_torch(degraded_chart), numpy_to_torch(chart)
-        return degraded_chart, th_chart
+        return degraded_chart.squeeze(0), th_chart.squeeze(0)
 
 
 class Degradation():
@@ -226,7 +226,7 @@ class DegradationNoise(Degradation):
             self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
                                  random.random() + self.noise_stddev[0] for _ in range(length)]
         
-    def degrade(self, x: torch.Tensor, idx: int):
+    def __call__(self, x: torch.Tensor, idx: int):
         # expects x of shape [b, c, h, w]
         assert x.ndim == 4
         assert x.shape[1] in [1, 3]
@@ -253,13 +253,15 @@ class DegradationBlur(Degradation):
         
         kernels = loadmat(DATASET_BLUR_KERNEL_PATH)["kernels"].squeeze()
         # conversion to torch (the shape of the kernel is not constant)
-        self.kernels = tuple([torch.from_numpy(kernel) for kernel in kernels])
+        self.kernels = tuple([
+            torch.from_numpy(kernel).unsqueeze(0).unsqueeze(0) 
+            for kernel in kernels])
         self.n_kernels = len(self.kernels)              
         
         if frozen_seed is not None:
             self.kernel_ids = [random.randint(0, self.n_kernels-1) for _ in range(length)]
         
-    def degrade(self, x: torch.Tensor, idx: int):
+    def __call__(self, x: torch.Tensor, idx: int):
         # expects x of shape [b, c, h, w]
         assert x.ndim == 4
         assert x.shape[1] in [1, 3]
@@ -270,12 +272,12 @@ class DegradationBlur(Degradation):
         else:
             kernel_id = random.randint(0, self.n_kernels-1)
             
-        kernel = self.kernels[kernel_id].to(device)
+        kernel = self.kernels[kernel_id].to(device).repeat(3, 1, 1, 1).float() # repeat for grouped conv
         
         # We use padding = same to make
         # sure that the output size does not depend on the kernel.
-        x = F.conv2d(x, kernel, padding="valid")
-
+        x = F.conv2d(x, kernel, padding="valid", groups=3)
+        
         self.current_degradation[idx] = {
             "blur_kernel_id": kernel_id
         }
