@@ -12,7 +12,7 @@ def define_dead_leaves_chart(
     radius_max: Optional[int] = -1,
     radius_alpha: Optional[int] = 3,
     seed: int = None,
-    sampler=SAMPLER_DIV2K,
+    sampler=SAMPLER_UNIFORM,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Defines the geometric and color properties of the primitives in the dead leaves chart to later be sampled.

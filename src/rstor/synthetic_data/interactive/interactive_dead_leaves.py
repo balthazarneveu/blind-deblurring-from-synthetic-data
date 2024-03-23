@@ -1,5 +1,6 @@
 from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
+from rstor.properties import SAMPLER_UNIFORM, SAMPLER_DIV2K, SAMPLER_SATURATED
 import sys
 import numpy as np
 from interactive_pipe import interactive_pipeline, interactive
@@ -15,6 +16,7 @@ def dead_leave_plugin(ds=1):
         seed=(0, [-1, 42]),
         ds=(ds, [1, 5]),
         numba_flag=(True,),  # Default CPU to avoid issues by default
+        sampler=(SAMPLER_UNIFORM, [SAMPLER_UNIFORM, SAMPLER_DIV2K, SAMPLER_SATURATED]),
         # ds=(ds, [1, 5])
     )(generate_deadleave)
 
@@ -27,6 +29,7 @@ def generate_deadleave(
     seed=0,
     ds=3,
     numba_flag=True,
+    sampler=SAMPLER_UNIFORM,
     global_params={}
 ) -> np.ndarray:
     global_params["ds_factor"] = ds
@@ -38,7 +41,8 @@ def generate_deadleave(
     else:
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
                                       radius_alpha=radius_alpha,
-                                      seed=None if seed < 0 else seed).copy_to_host()
+                                      seed=None if seed < 0 else seed,
+                                      sampler=sampler).copy_to_host()
     if chart.shape[-1] == 1:
         chart = chart.repeat(3, axis=-1)
         # Required to switch from colors to gray scale visualization.
