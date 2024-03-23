@@ -1,4 +1,4 @@
-name: Interactive pipe python package
+name: RSTOR Image restoration framework
 
 on: [push]
 
