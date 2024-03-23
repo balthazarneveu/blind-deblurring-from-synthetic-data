@@ -4,7 +4,7 @@ from batch_processing import Batch
 from rstor.properties import (
     DEVICE, NAME, PRETTY_NAME, DATALOADER, CONFIG_DEAD_LEAVES, VALIDATION,
     BATCH_SIZE, SIZE,
-    REDUCTION_AVERAGE, REDUCTION_SKIP,
+    REDUCTION_SKIP,
     TRACES_TARGET, TRACES_DEGRADED, TRACES_RESTORED, TRACES_METRICS, TRACES_ALL
 )
 from rstor.data.dataloader import get_data_loader

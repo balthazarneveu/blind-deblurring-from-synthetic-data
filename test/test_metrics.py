@@ -1,6 +1,8 @@
 import torch
+import numpy as np
 from rstor.learning.metrics import compute_psnr, compute_ssim, compute_metrics, compute_lpips
-from rstor.properties import REDUCTION_AVERAGE, REDUCTION_SKIP, DEVICE
+from rstor.properties import REDUCTION_AVERAGE, REDUCTION_SKIP, REDUCTION_SUM, DEVICE
+from rstor.properties import METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS
 
 
 def test_compute_psnr():
@@ -43,4 +45,13 @@ def test_compute_metrics():
     metrics = compute_metrics(x, y)
     print(metrics)
     metric_per_image = compute_metrics(x, y, reduction=REDUCTION_SKIP)
-    print(metric_per_image)
+
+    metric_sum_reduction = compute_metrics(x, y, reduction=REDUCTION_SUM)
+    assert metric_per_image[METRIC_PSNR].shape == (8,), "Metrics Test case 1 failed"
+    assert metric_per_image[METRIC_SSIM].shape == (8,), "Metrics Test case 2 failed"
+    assert metric_per_image[METRIC_LPIPS].shape == (8,), "Metrics Test case 3 failed"
+    assert np.isclose(metric_per_image[METRIC_PSNR].mean().item(), metrics[METRIC_PSNR]), "Metrics Test case 4 failed"
+    assert np.isclose(metric_per_image[METRIC_PSNR].sum().item(),
+                      metric_sum_reduction[METRIC_PSNR]), "Metrics Test case 5 failed"
+    assert np.isclose(metrics[METRIC_PSNR],
+                      metric_sum_reduction[METRIC_PSNR]/8.), "Metrics Test case 6 failed"
