@@ -52,12 +52,11 @@ class RestorationDataset(Dataset):
             img_data = self.data_list[index]
         else:
             img_data = load_image(self.data_list[index])
-            # img_data = torch.randn(3, 512, 512)
         img_data = img_data.to(self.device)
-        # img_data = torch.from_numpy(img_data).permute(2, 0, 1).to(self.device)
         if AUGMENTATION_FLIP in self.augmentation_list:
             img_data = augment_flip(img_data)
         img_data = self.cropper(img_data)
+        img_data = img_data.float()/255.
         return img_data
 
     def __len__(self):
