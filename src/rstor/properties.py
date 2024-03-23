@@ -1,4 +1,5 @@
 import torch
+from pathlib import Path
 RELU = "ReLU"
 LEAKY_RELU = "LeakyReLU"
 SIMPLE_GATE = "simple_gate"
@@ -40,3 +41,6 @@ TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
 COLOR_SAMPLER = "div2k" # uniform, saturated, div2k
 
+DATASET_FOLDER = "__dataset"
+DATASET_PATH = Path(__file__).parent.parent.parent/DATASET_FOLDER
+DATASET_DL_RANDOMRGB_1024 = "deadleaves_randomrgb_1024"
