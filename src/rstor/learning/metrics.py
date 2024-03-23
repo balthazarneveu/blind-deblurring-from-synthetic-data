@@ -1,5 +1,5 @@
 import torch
-from rstor.properties import METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, REDUCTION_AVERAGE, REDUCTION_SKIP
+from rstor.properties import METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, REDUCTION_AVERAGE, REDUCTION_SKIP, REDUCTION_SUM
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 from typing import List, Optional
@@ -18,7 +18,7 @@ def compute_psnr(
     Args:
         predic (torch.Tensor): [N, C, H, W] predicted values.
         target (torch.Tensor): [N, C, H, W] target values.
-        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP.
+        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP/REDUCTION_SUM.
 
     Returns:
         torch.Tensor: The average PSNR value for the batch.
@@ -29,6 +29,8 @@ def compute_psnr(
         psnr_per_image = 10 * torch.log10(1 / mse_per_image)
         if reduction == REDUCTION_AVERAGE:
             average_psnr = torch.mean(psnr_per_image)
+        elif reduction == REDUCTION_SUM:
+            average_psnr = torch.sum(psnr_per_image)
         elif reduction == REDUCTION_SKIP:
             average_psnr = psnr_per_image
         else:
@@ -53,8 +55,12 @@ def compute_ssim(
         torch.Tensor: The average SSIM value for the batch.
     """
     with torch.no_grad():
-        ssim = SSIM(data_range=1.0, reduction=None if reduction ==
-                    REDUCTION_SKIP else "elementwise_mean").to(predic.device)
+        reduction_mode = {
+            REDUCTION_SKIP: None,
+            REDUCTION_AVERAGE: "elementwise_mean",
+            REDUCTION_SUM: "sum"
+        }[reduction]
+        ssim = SSIM(data_range=1.0, reduction=reduction_mode).to(predic.device)
         assert predic.shape == target.shape, f"{predic.shape} != {target.shape}"
         assert predic.device == target.device, f"{predic.device} != {target.device}"
         ssim_value = ssim(predic, target)
@@ -78,9 +84,15 @@ def compute_lpips(
     Returns:
         torch.Tensor: The average SSIM value for the batch.
     """
+    reduction_mode = {
+        REDUCTION_SKIP:  "sum",  # does not really matter
+        REDUCTION_AVERAGE: "mean",
+        REDUCTION_SUM: "sum"
+    }[reduction]
+
     with torch.no_grad():
         lpip_metrics = LearnedPerceptualImagePatchSimilarity(
-            reduction="mean",
+            reduction=reduction_mode,
             normalize=True  # If set to True will instead expect input to be in the [0,1] range.
         ).to(predic.device)
         assert predic.shape == target.shape, f"{predic.shape} != {target.shape}"
@@ -93,7 +105,7 @@ def compute_lpips(
                     target[idx, ...].unsqueeze(0).clip(0, 1)
                 ))
             lpip_value = torch.stack(lpip_value)
-        elif reduction == REDUCTION_AVERAGE:
+        elif reduction in [REDUCTION_SUM, REDUCTION_AVERAGE]:
             lpip_value = lpip_metrics(predic.clip(0, 1), target.clip(0, 1))
     return lpip_value
 
@@ -109,7 +121,7 @@ def compute_metrics(
     Args:
         predic (torch.Tensor): [N, C, H, W] predicted values.
         target (torch.Tensor): [N, C, H, W] target values.
-        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP.
+        reduction (str): Reduction method. REDUCTION_AVERAGE/REDUCTION_SKIP/REDUCTION SUM.
         chosen_metrics (list): List of metrics to compute, default [METRIC_PSNR, METRIC_SSIM]
 
     Returns:
