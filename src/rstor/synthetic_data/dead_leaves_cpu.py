@@ -2,6 +2,7 @@ from typing import Tuple, Optional
 import numpy as np
 import cv2
 from rstor.synthetic_data.dead_leaves_sampler import define_dead_leaves_chart
+from rstor.properties import SAMPLER_UNIFORM
 
 
 def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
@@ -12,9 +13,10 @@ def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           radius_max: Optional[int] = -1,
                           radius_alpha: Optional[int] = 3,
                           seed: int = None,
-                          reverse: Optional[bool] = True) -> np.ndarray:
+                          reverse: Optional[bool] = True,
+                          sampler=SAMPLER_UNIFORM) -> np.ndarray:
     """
-    Generation of a dead leaves chart by splatting circles on top of each other.
+    Generation of a deqqad leaves chart by splatting circles on top of each other.
 
     Args:
         size (Tuple[int, int], optional): size of the generated chart. Defaults to (100, 100).
@@ -42,7 +44,9 @@ def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         radius_min,
         radius_max,
         radius_alpha,
-        seed
+        seed,
+        sampler=sampler,
+        
     )
     if not colored:
         color = np.concatenate((color, color, color), axis=1)

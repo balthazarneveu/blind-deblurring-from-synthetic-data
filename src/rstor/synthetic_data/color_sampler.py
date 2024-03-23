@@ -3,6 +3,7 @@ import cv2
 
 from pathlib import Path
 from rstor.properties import DATASET_PATH
+from typing import List
 
 
 def sample_uniform_rgb(size: int, seed: int = None) -> np.ndarray:
@@ -31,7 +32,7 @@ def sample_uniform_rgb(size: int, seed: int = None) -> np.ndarray:
 
 def sample_saturated_color(size: int, seed: int = None) -> np.ndarray:
     """
-    Generate n random RGB values.
+    Generate n saturated RGB values.
 
     Args:
         n (int): number of colors to sample
@@ -51,18 +52,14 @@ def sample_saturated_color(size: int, seed: int = None) -> np.ndarray:
     return rgb.squeeze()
 
 
-def sample_div2k_color(size: int, seed: int = None):
+def sample_color_from_images(size: int, seed: int = None, path_to_images: List[Path] = []) -> np.ndarray:
+    assert len(path_to_images) > 0, "Please provide a list of images to sample colors from."
     rng = np.random.default_rng(np.random.SeedSequence(seed))
-    div2k_path = DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR"
-    # TODO this should be fixed at some point
-    # div2k_path = Path("__dataset") / "div2k" / "DIV2K_train_HR"
-
-    png_paths = sorted([file for file in div2k_path.glob("*.png")])
 
     # Randomly pick an image and load it
-    img_id = rng.integers(0, len(png_paths))
+    img_id = rng.integers(0, len(path_to_images))
 
-    img = cv2.imread(png_paths[img_id].as_posix())
+    img = cv2.imread(path_to_images[img_id].as_posix())
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) / 255
 
     pixels = img.reshape(-1, 3)

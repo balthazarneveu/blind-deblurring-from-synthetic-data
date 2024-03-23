@@ -40,8 +40,9 @@ TRACES_RESTORED = "restored"
 TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
 
-SAMPLER_SATURATED = "saturated" 
+SAMPLER_SATURATED = "saturated"
 SAMPLER_UNIFORM = "uniform"
+SAMPLER_NATURAL = "natural"
 SAMPLER_DIV2K = "div2k"
 
 DATASET_FOLDER = "__dataset"

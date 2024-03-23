@@ -1,6 +1,6 @@
 from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
-from rstor.properties import SAMPLER_UNIFORM, SAMPLER_DIV2K, SAMPLER_SATURATED
+from rstor.properties import SAMPLER_UNIFORM, SAMPLER_DIV2K, SAMPLER_NATURAL, SAMPLER_SATURATED, DATASET_PATH
 import sys
 import numpy as np
 from interactive_pipe import interactive_pipeline, interactive
@@ -11,7 +11,7 @@ def dead_leave_plugin(ds=1):
     interactive(
         background_intensity=(0.5, [0., 1.]),
         number_of_circles=(-1, [-1, 10000]),
-        colored=(False,),
+        colored=(True,),
         radius_alpha=(3, [1, 4]),
         seed=(0, [-1, 42]),
         ds=(ds, [1, 5]),
@@ -39,10 +39,17 @@ def generate_deadleave(
                                       radius_alpha=radius_alpha,
                                       seed=None if seed < 0 else seed)
     else:
+        natural_image_list = None
+        if sampler == SAMPLER_DIV2K:
+            sampler = SAMPLER_NATURAL
+            div2k_path = DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR"
+            natural_image_list = sorted([file for file in div2k_path.glob("*.png")])
+
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
                                       radius_alpha=radius_alpha,
                                       seed=None if seed < 0 else seed,
-                                      sampler=sampler).copy_to_host()
+                                      sampler=sampler,
+                                      natural_image_list=natural_image_list).copy_to_host()
     if chart.shape[-1] == 1:
         chart = chart.repeat(3, axis=-1)
         # Required to switch from colors to gray scale visualization.

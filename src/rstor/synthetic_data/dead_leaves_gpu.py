@@ -17,7 +17,8 @@ def gpu_dead_leaves_chart(
         radius_alpha: Optional[int] = 3,
         seed: int = None,
         reverse=True,
-        sampler=None
+        sampler=SAMPLER_UNIFORM,
+        natural_image_list=None
 ) -> np.ndarray:
     center_x, center_y, radius, color = define_dead_leaves_chart(
         size,
@@ -27,7 +28,8 @@ def gpu_dead_leaves_chart(
         radius_max,
         radius_alpha,
         seed,
-        sampler=sampler
+        sampler=sampler,
+        natural_image_list=natural_image_list
     )
 
     # Generate on gpu
