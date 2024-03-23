@@ -9,6 +9,7 @@ from batch_processing import Batch
 from interactive_pipe.data_objects.image import Image
 from rstor.analyzis.interactive.images import image_selector
 from rstor.analyzis.interactive.crop import plug_crop_selector
+from rstor.analyzis.interactive.metrics import plug_configure_metrics
 from interactive_pipe import interactive, KeyboardControl
 
 
@@ -40,9 +41,16 @@ def main(argv):
         image_control = (0, [0, len(img_list)-1])
     interactive(image_index=image_control)(image_selector)
     plug_crop_selector(num_pad=args.keyboard)
+    plug_configure_metrics(key_shortcut="a")  # "a" if args.keyboard else None)
     model_dict = get_default_models(args.experiments, Path(args.models_storage), keyboard_control=args.keyboard)
-    interactive_pipeline(gui="auto", cache=True, safe_input_buffer_deepcopy=False)(
-        natural_inference_pipeline)(img_list, model_dict)
+    interactive_pipeline(
+        gui="auto",
+        cache=True,
+        safe_input_buffer_deepcopy=False
+    )(natural_inference_pipeline)(
+        img_list,
+        model_dict
+    )
 
 
 if __name__ == "__main__":

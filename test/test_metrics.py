@@ -1,6 +1,6 @@
 import torch
-from rstor.learning.metrics import compute_psnr, compute_ssim, compute_metrics
-from rstor.properties import REDUCTION_AVERAGE, REDUCTION_SKIP
+from rstor.learning.metrics import compute_psnr, compute_ssim, compute_metrics, compute_lpips
+from rstor.properties import REDUCTION_AVERAGE, REDUCTION_SKIP, DEVICE
 
 
 def test_compute_psnr():
@@ -23,12 +23,22 @@ def test_compute_ssim():
     y = torch.rand(8, 3, 256, 256)
     ssim = compute_ssim(x, y, reduction=REDUCTION_AVERAGE)
     ssim_per_unit = compute_ssim(x, y, reduction=REDUCTION_SKIP)
-    assert ssim_per_unit.shape == (8,), "Test case 1 failed"
-    assert ssim_per_unit.mean() == ssim, "Test case 2 failed"
+    assert ssim_per_unit.shape == (8,), "SSIM Test case 1 failed"
+    assert ssim_per_unit.mean() == ssim, "SSIM Test case 2 failed"
+
+
+def test_compute_lpips():
+    for i in range(2):
+        x = torch.rand(8, 3, 256, 256).to(DEVICE)
+        y = torch.rand(8, 3, 256, 256).to(DEVICE)
+        lpips = compute_lpips(x, y, reduction=REDUCTION_AVERAGE)
+        lpips_per_unit = compute_lpips(x, y, reduction=REDUCTION_SKIP)
+        assert lpips_per_unit.shape == (8,), "LPIPS Test case 1 failed"
+        assert torch.isclose(lpips_per_unit.mean(), lpips), "LPIPS Test case 2 failed"
 
 
 def test_compute_metrics():
-    x = torch.randn(8, 3, 256, 256)
+    x = torch.rand(8, 3, 256, 256)  # negative value ensures that we check clamping for LPIPS
     y = x.clone() + torch.randn(8, 3, 256, 256) * 0.01
     metrics = compute_metrics(x, y)
     print(metrics)
