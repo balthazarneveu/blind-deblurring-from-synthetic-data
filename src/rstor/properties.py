@@ -39,7 +39,10 @@ TRACES_DEGRADED = "degraded"
 TRACES_RESTORED = "restored"
 TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
-COLOR_SAMPLER = "div2k" # uniform, saturated, div2k
+
+SAMPLER_SATURATED = "saturated" 
+SAMPLER_UNIFORM = "uniform"
+SAMPLER_DIV2K = "div2k"
 
 DATASET_FOLDER = "__dataset"
 DATASET_PATH = Path(__file__).parent.parent.parent/DATASET_FOLDER

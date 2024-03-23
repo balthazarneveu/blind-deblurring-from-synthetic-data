@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 
 from pathlib import Path
+from rstor.properties import DATASET_PATH
 
 
 def sample_uniform_rgb(size: int, seed: int = None) -> np.ndarray:
@@ -50,10 +51,12 @@ def sample_saturated_color(size: int, seed: int = None) -> np.ndarray:
 
 def sample_div2k_color(size: int, seed: int = None):
     rng = np.random.default_rng(np.random.SeedSequence(seed))
-    div2k_path = Path("__dataset/div2k/DIV2K_train_HR")
-
+    # div2k_path = DATASET_PATH / "div2k" / "DIV2K_train_HR"
+    # TODO this should be fixed at some point
+    div2k_path = Path("__dataset") / "div2k" / "DIV2K_train_HR"
+    
     png_paths = sorted([file for file in div2k_path.glob("*.png")])
-
+    
     ## Randomly pick an image and load it
     img_id = rng.integers(0, len(png_paths))
     
