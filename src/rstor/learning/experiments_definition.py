@@ -2,6 +2,7 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               TRAIN, VALIDATION, SCHEDULER, REDUCELRONPLATEAU,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
+                              SELECTED_METRICS, METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS,
                               PRETTY_NAME)
 from typing import Tuple
 
@@ -39,7 +40,8 @@ def presets_experiments(
     bias: bool = True,
     length: int = 5000,
     data_size: Tuple[int, int] = (128, 128),
-    model_preset: str = "StackedConvolutions"
+    model_preset: str = "StackedConvolutions",
+    lpips: bool = False
 ) -> dict:
     config = {
         ID: exp,
@@ -70,12 +72,17 @@ def presets_experiments(
         "patience": 5
     }
     config[LOSS] = LOSS_MSE
+    config[SELECTED_METRICS] = [METRIC_PSNR, METRIC_SSIM]
+    if lpips:
+        config[SELECTED_METRICS].append(METRIC_LPIPS)
     return config
 
 
 def get_experiment_config(exp: int) -> dict:
     if exp == -1:
         config = presets_experiments(exp, length=10, n=2)
+    elif exp == -2:
+        config = presets_experiments(exp, length=10, n=2, lpips=True)
     elif exp == 1000:
         config = presets_experiments(exp, n=60)
         config[PRETTY_NAME] = "Vanilla small blur"

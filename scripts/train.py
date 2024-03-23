@@ -11,6 +11,7 @@ from rstor.properties import (
     TRAIN, VALIDATION, LR,
     LOSS_MSE, METRIC_PSNR, METRIC_SSIM,
     DEVICE, SCHEDULER_CONFIGURATION, SCHEDULER, REDUCELRONPLATEAU,
+    SELECTED_METRICS,
     LOSS
 )
 from rstor.learning.metrics import compute_metrics
@@ -47,12 +48,9 @@ def training_loop(
     device: str = DEVICE,
     wandb_flag: bool = False,
     output_dir: Path = None,
-    chosen_metrics: list = [
-        METRIC_PSNR,
-        METRIC_SSIM
-    ]
 ):
     best_accuracy = 0.
+    chosen_metrics = config.get(SELECTED_METRICS, [METRIC_PSNR, METRIC_SSIM])
     for n_epoch in tqdm(range(config[NB_EPOCHS])):
         current_metrics = {
             TRAIN: 0.,
