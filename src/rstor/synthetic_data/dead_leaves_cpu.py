@@ -1,8 +1,9 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 import numpy as np
 import cv2
 from rstor.synthetic_data.dead_leaves_sampler import define_dead_leaves_chart
 from rstor.properties import SAMPLER_UNIFORM
+from pathlib import Path
 
 
 def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
@@ -14,7 +15,8 @@ def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
                           radius_alpha: Optional[int] = 3,
                           seed: int = None,
                           reverse: Optional[bool] = True,
-                          sampler=SAMPLER_UNIFORM) -> np.ndarray:
+                          sampler=SAMPLER_UNIFORM,
+                          natural_image_list: List[Path] = []) -> np.ndarray:
     """
     Generation of a deqqad leaves chart by splatting circles on top of each other.
 
@@ -46,7 +48,7 @@ def cpu_dead_leaves_chart(size: Tuple[int, int] = (100, 100),
         radius_alpha,
         seed,
         sampler=sampler,
-        
+        natural_image_list=natural_image_list
     )
     if not colored:
         color = np.concatenate((color, color, color), axis=1)

@@ -34,17 +34,19 @@ def generate_deadleave(
 ) -> np.ndarray:
     global_params["ds_factor"] = ds
     bg_color = (background_intensity, background_intensity, background_intensity)
+    natural_image_list = None
+    if sampler == SAMPLER_DIV2K:
+        sampler = SAMPLER_NATURAL
+        div2k_path = DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR"
+        natural_image_list = sorted([file for file in div2k_path.glob("*.png")])
     if not numba_flag:
         chart = cpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
                                       radius_alpha=radius_alpha,
-                                      seed=None if seed < 0 else seed)
+                                      seed=None if seed < 0 else seed,
+                                      sampler=sampler,
+                                      reverse=False,
+                                      natural_image_list=natural_image_list)
     else:
-        natural_image_list = None
-        if sampler == SAMPLER_DIV2K:
-            sampler = SAMPLER_NATURAL
-            div2k_path = DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR"
-            natural_image_list = sorted([file for file in div2k_path.glob("*.png")])
-
         chart = gpu_dead_leaves_chart((512*ds, 512*ds), number_of_circles, bg_color, colored,
                                       radius_alpha=radius_alpha,
                                       seed=None if seed < 0 else seed,
