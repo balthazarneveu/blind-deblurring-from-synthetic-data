@@ -65,7 +65,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
     )
     dl_valid = ds(
         valid_files,
-
+        size=config[DATALOADER][SIZE],
         frozen_seed=frozen_seed,
         **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
