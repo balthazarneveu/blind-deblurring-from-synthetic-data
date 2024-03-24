@@ -11,8 +11,6 @@ from skimage.filters import gaussian
 import random
 import numpy as np
 
-from numba import cuda
-
 from rstor.utils import DEFAULT_TORCH_FLOAT_TYPE
 
 
@@ -40,24 +38,22 @@ class DeadLeavesDataset(Dataset):
         self.config_dead_leaves = config_dead_leaves
         self.blur_kernel_half_size = blur_kernel_half_size
         self.noise_stddev = noise_stddev
-        if frozen_seed is not None:
-            random.seed(self.frozen_seed)
-            self.blur_kernel_half_size = [
-                (
-                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1]),
-                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-                ) for _ in range(length)
-            ]
-            self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
-                                 random.random() + self.noise_stddev[0] for _ in range(length)]
+
+        self.degradation_blur = DegradationBlur(length,
+                                           frozen_seed)
+        self.degradation_noise = DegradationNoise(length,
+                                             noise_stddev,
+                                             frozen_seed)
         self.current_degradation = {}
 
     def __len__(self):
         return self.length
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        # TODO there is a bug on this cpu version, the dead leaved dont appear ot be right
         seed = self.frozen_seed + idx if self.frozen_seed is not None else None
         chart = cpu_dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
+        
         if self.ds_factor > 1:
             # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
             sigma = 3/5
@@ -65,27 +61,18 @@ class DeadLeavesDataset(Dataset):
                 chart, sigma=(sigma, sigma, 0), mode='nearest',
                 cval=0, preserve_range=True, truncate=4.0)
             chart = chart[::self.ds_factor, ::self.ds_factor]
-        if self.frozen_seed is not None:
-            k_size_x, k_size_y = self.blur_kernel_half_size[idx]
-            std_dev = self.noise_stddev[idx]
-        else:
-            k_size_x = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-            k_size_y = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-            std_dev = (self.noise_stddev[1] - self.noise_stddev[0]) * random.random() + self.noise_stddev[0]
-        k_size_x = 2 * k_size_x + 1
-        k_size_y = 2 * k_size_y + 1
-        degraded_chart = cv2.GaussianBlur(chart, (k_size_x, k_size_y), 0)
-        if std_dev > 0.:
-            # print(f"Adding noise with std_dev={std_dev}...")
-            degraded_chart += (std_dev/255.)*np.random.randn(*degraded_chart.shape)
+        
+        th_chart = torch.from_numpy(chart).permute(2, 0, 1).unsqueeze(0)
+
+        degraded_chart = self.degradation_blur(th_chart, idx)
+        degraded_chart = self.degradation_noise(degraded_chart, idx)
+        
         self.current_degradation[idx] = {
-            "blur_kernel_half_size": (k_size_x, k_size_y),
-            "noise_stddev": std_dev
+            "blur_kernel_id": self.degradation_blur.current_degradation[idx]["blur_kernel_id"],
+            "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
-        def numpy_to_torch(ndarray):
-            return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
-        return numpy_to_torch(degraded_chart), numpy_to_torch(chart)
+        return degraded_chart.squeeze(0), th_chart.squeeze(0)
 
 
 class DeadLeavesDatasetGPU(Dataset):
@@ -104,7 +91,6 @@ class DeadLeavesDatasetGPU(Dataset):
         # radius_mean: Optional[int] = -1,
         # radius_stddev: Optional[int] = -1,
     ):
-        print("seed :", frozen_seed)
         self.frozen_seed = frozen_seed
         self.ds_factor = ds_factor
         self.size = (size[0]*ds_factor, size[1]*ds_factor)
@@ -123,8 +109,6 @@ class DeadLeavesDatasetGPU(Dataset):
 
         self.degradation_blur = DegradationBlur(length,
                                            frozen_seed)
-        if frozen_seed is not None:
-            print(self.degradation_blur.kernel_ids[0])
         self.degradation_noise = DegradationNoise(length,
                                              noise_stddev,
                                              frozen_seed)
