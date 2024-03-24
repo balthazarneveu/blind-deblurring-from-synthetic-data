@@ -239,7 +239,7 @@ def get_experiment_config(exp: int) -> dict:
         )
         config[DATALOADER][SIZE] = (256, 256)
     elif exp == 3001:  # ENABLE GRADIENT CLIPPING
-        config = presets_experiments(exp, n=30,  b=4, model_preset="NAFNet")
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
@@ -256,7 +256,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][SIZE] = (128, 128)
     elif exp == 3010 or exp == 3011:  # exp 3011 = REDO with Gradient clipping
         config = presets_experiments(exp, n=50,  b=4, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet Light denoise - DL_DIV2K_512 0-50"
+        config[PRETTY_NAME] = "NAFNet Light denoise - DL_DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
