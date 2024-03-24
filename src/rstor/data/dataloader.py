@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME
+from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME, CONFIG_DEGRADATION
 from rstor.data.synthetic_dataloader import DeadLeavesDataset, DeadLeavesDatasetGPU
 from rstor.data.stored_images_dataloader import RestorationDataset
 from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_DL_DIV2K_512, DATASET_PATH
@@ -58,11 +58,13 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         valid_files = all_files[cut_index:]
     dl_train = ds(
         train_files,
-        frozen_seed=None
+        frozen_seed=None,
+        **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
     dl_valid = ds(
         valid_files,
-        frozen_seed=frozen_seed
+        frozen_seed=frozen_seed,
+        **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
     dl_dict = create_dataloaders(config, dl_train, dl_valid)
     return dl_dict

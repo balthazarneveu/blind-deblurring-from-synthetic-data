@@ -3,6 +3,8 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
                               SELECTED_METRICS, METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS,
+                              DATASET_DL_DIV2K_512,
+                              CONFIG_DEGRADATION,
                               PRETTY_NAME)
 from typing import Tuple
 
@@ -92,6 +94,13 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla denoise only - ds=1 - noisy 0-50"
+    elif exp == -4:
+        config = presets_experiments(exp, n=20)
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla exp from disk - noisy 0-50"
     elif exp == 1000:
         config = presets_experiments(exp, n=60)
         config[PRETTY_NAME] = "Vanilla small blur"
