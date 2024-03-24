@@ -47,6 +47,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         train_root = dataset_root/"DIV2K_train_HR"/"DIV2K_train_HR"
         valid_root = dataset_root/"DIV2K_valid_HR"/"DIV2K_valid_HR"
         train_files = sorted(list(train_root.glob("*.png")))
+        train_files = 5*train_files  # Just to get 4000 elements...
         valid_files = sorted(list(valid_root.glob("*.png")))
     elif dataset_name in [DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
         dataset_root = DATASET_PATH/dataset_name
@@ -64,7 +65,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
     )
     dl_valid = ds(
         valid_files,
-        
+
         frozen_seed=frozen_seed,
         **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
