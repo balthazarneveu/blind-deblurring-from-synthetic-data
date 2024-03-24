@@ -5,7 +5,7 @@ from rstor.data.degradation import DegradationNoise
 from rstor.properties import DEVICE, AUGMENTATION_FLIP
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 from typing import Tuple, Optional, Union
-from torchvision.transforms import RandomCrop
+from torchvision.transforms import RandomCrop, CenterCrop
 from pathlib import Path
 from tqdm import tqdm
 from time import time
@@ -43,7 +43,7 @@ class RestorationDataset(Dataset):
             self.data_list = [load_image(pth) for pth in tqdm(self.path_list)]
         else:
             self.data_list = self.path_list
-        self.cropper = RandomCrop(size=size)
+        self.cropper = RandomCrop(size=size) if frozen_seed is None else CenterCrop(size)
         self.degradation_noise = DegradationNoise(self.n_samples,
                                                   noise_stddev,
                                                   frozen_seed)
