@@ -78,34 +78,36 @@ def get_data_loader(config, frozen_seed=42):
 
 if __name__ == "__main__":
     # Example of usage synthetic dataset
-    if False:
-        dead_leaves_dataset = DeadLeavesDatasetGPU(colored=True)
-        dl = DataLoader(dead_leaves_dataset, batch_size=4, shuffle=True)
-    # Example of usage stored images dataset
-    config = {
-        DATALOADER: {
-            # NAME: DATASET_DL_RANDOMRGB_1024,
-            NAME: DATASET_DIV2K,
-            SIZE: (128, 128),
-            BATCH_SIZE: {
-                TRAIN: 4,
-                VALIDATION: 4
-            },
-        }
-    }
-    dl_dict = get_data_loader(config)
-    # dl = dl_dict[TRAIN]
-    dl = dl_dict[VALIDATION]
-    for i, (batch_inp, batch_target) in enumerate(dl):
-        print(batch_inp.shape, batch_target.shape)  # Should print [batch_size, size[0], size[1], 3] for each batch
-        if i == 1:  # Just to break the loop after two batches for demonstration
-            import matplotlib.pyplot as plt
-            plt.subplot(1, 2, 1)
-            plt.imshow(batch_inp.permute(0, 2, 3, 1).reshape(-1, batch_inp.shape[-1], 3).cpu().numpy())
-            plt.title("Degraded")
-            plt.subplot(1, 2, 2)
-            plt.imshow(batch_target.permute(0, 2, 3, 1).reshape(-1, batch_inp.shape[-1], 3).cpu().numpy())
-            plt.title("Target")
-            plt.show()
-            print(batch_target)
-            break
+    for dataset_name in [None, DATASET_DIV2K, DATASET_DL_DIV2K_1024]:
+        if dataset_name is None:
+            dead_leaves_dataset = DeadLeavesDatasetGPU(colored=True)
+            dl = DataLoader(dead_leaves_dataset, batch_size=4, shuffle=True)
+        else:
+            # Example of usage stored images dataset
+            config = {
+                DATALOADER: {
+                    # NAME: DATASET_DL_RANDOMRGB_1024,
+                    NAME: dataset_name,
+                    SIZE: (128, 128),
+                    BATCH_SIZE: {
+                        TRAIN: 4,
+                        VALIDATION: 4
+                    },
+                }
+            }
+            dl_dict = get_data_loader(config)
+            # dl = dl_dict[TRAIN]
+            dl = dl_dict[VALIDATION]
+        for i, (batch_inp, batch_target) in enumerate(dl):
+            print(batch_inp.shape, batch_target.shape)  # Should print [batch_size, size[0], size[1], 3] for each batch
+            if i == 1:  # Just to break the loop after two batches for demonstration
+                import matplotlib.pyplot as plt
+                plt.subplot(1, 2, 1)
+                plt.imshow(batch_inp.permute(0, 2, 3, 1).reshape(-1, batch_inp.shape[-1], 3).cpu().numpy())
+                plt.title("Degraded")
+                plt.subplot(1, 2, 2)
+                plt.imshow(batch_target.permute(0, 2, 3, 1).reshape(-1, batch_inp.shape[-1], 3).cpu().numpy())
+                plt.title("Target")
+                plt.show()
+                # print(batch_target)
+                break
