@@ -41,6 +41,12 @@ TRACES_RESTORED = "restored"
 TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
 
+DEGRADATION_BLUR_NONE = "none"
+DEGRADATION_BLUR_MAT = "mat"
+DEGRADATION_BLUR_GAUSS = "gauss"
+
+
+
 SAMPLER_SATURATED = "saturated"
 SAMPLER_UNIFORM = "uniform"
 SAMPLER_NATURAL = "natural"
