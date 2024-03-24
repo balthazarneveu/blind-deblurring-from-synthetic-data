@@ -5,7 +5,8 @@ from rstor.properties import (
     DEVICE, NAME, PRETTY_NAME, DATALOADER, CONFIG_DEAD_LEAVES, VALIDATION,
     BATCH_SIZE, SIZE,
     REDUCTION_SKIP,
-    TRACES_TARGET, TRACES_DEGRADED, TRACES_RESTORED, TRACES_METRICS, TRACES_ALL
+    TRACES_TARGET, TRACES_DEGRADED, TRACES_RESTORED, TRACES_METRICS, TRACES_ALL,
+    SAMPLER_SATURATED
 )
 from rstor.data.dataloader import get_data_loader
 from tqdm import tqdm
@@ -142,7 +143,8 @@ def infer_main(argv, batch_mode=False):
             config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
                 blur_kernel_half_size=[0, 0],
                 ds_factor=1,
-                noise_stddev=list(std_dev)
+                noise_stddev=list(std_dev),
+                sampler=SAMPLER_SATURATED
             )
             config[DATALOADER]["gpu_gen"] = True
             config[DATALOADER][SIZE] = size
