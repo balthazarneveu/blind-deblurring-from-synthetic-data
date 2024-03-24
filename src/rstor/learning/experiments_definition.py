@@ -3,7 +3,7 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
                               SELECTED_METRICS, METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS,
-                              DATASET_DL_DIV2K_512,
+                              DATASET_DL_DIV2K_512, DATASET_DIV2K,
                               CONFIG_DEGRADATION,
                               PRETTY_NAME,
                               DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS,
@@ -279,7 +279,13 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla DL_DIV2K_512 0-50 - noisy 0-50"
-    
+    elif exp == 3120:
+        config = presets_experiments(exp, b=32, n=50)
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla DIV2K_512 0-50 - noisy 0-50"
     elif exp == 5000:  # ENABLE GRADIENT CLIPPING
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 0-50 256x256"
