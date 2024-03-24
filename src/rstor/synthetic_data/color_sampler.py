@@ -53,6 +53,7 @@ def sample_saturated_color(size: int, seed: int = None) -> np.ndarray:
 
 
 def sample_color_from_images(size: int, seed: int = None, path_to_images: List[Path] = []) -> np.ndarray:
+    print("path : ", path_to_images)
     assert len(path_to_images) > 0, "Please provide a list of images to sample colors from."
     rng = np.random.default_rng(np.random.SeedSequence(seed))
 
