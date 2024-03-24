@@ -78,7 +78,7 @@ def get_data_loader(config, frozen_seed=42):
 
 if __name__ == "__main__":
     # Example of usage synthetic dataset
-    for dataset_name in [None, DATASET_DIV2K, DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024]:
+    for dataset_name in [DATASET_DIV2K, None, DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024]:
         if dataset_name is None:
             dead_leaves_dataset = DeadLeavesDatasetGPU(colored=True)
             dl = DataLoader(dead_leaves_dataset, batch_size=4, shuffle=True)

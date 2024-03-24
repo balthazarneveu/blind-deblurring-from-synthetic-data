@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import DataLoader, Dataset
 from rstor.data.augmentation import augment_flip
+from rstor.data.degradation import DegradationNoise
 from rstor.properties import DEVICE, AUGMENTATION_FLIP
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 from typing import Tuple, Optional, Union
@@ -23,13 +24,14 @@ class RestorationDataset(Dataset):
         device: str = DEVICE,
         preloaded: bool = False,
         augmentation_list: Optional[list] = [],
-        freeze=True,
+        frozen_seed: int = None,  # useful for validation set!
+        noise_stddev: float = [0., 50.],
         **_extra_kwargs
     ):
         self.preloaded = preloaded
         self.augmentation_list = augmentation_list
         self.device = device
-        self.freeze = freeze
+        self.frozen_seed = frozen_seed
         if not isinstance(images_path, list):
             self.path_list = sorted(list(images_path.glob("*.png")))
         else:
@@ -41,6 +43,9 @@ class RestorationDataset(Dataset):
         else:
             self.data_list = self.path_list
         self.cropper = RandomCrop(size=(512, 512))
+        self.degradation_noise = DegradationNoise(self.n_samples,
+                                                  noise_stddev,
+                                                  frozen_seed)
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, Union[torch.Tensor, None]]:
         """Access a specific image from dataset and augment
@@ -60,7 +65,8 @@ class RestorationDataset(Dataset):
             img_data = augment_flip(img_data)
         img_data = self.cropper(img_data)
         img_data = img_data.float()/255.
-        degraded_img = img_data/2.
+        degraded_img = self.degradation_noise(img_data.unsqueeze(0), index)
+        degraded_img = degraded_img.squeeze(0)
         return degraded_img, img_data
 
     def __len__(self):
