@@ -77,6 +77,7 @@ def training_loop(
                         continue
                     if phase == TRAIN:
                         loss.backward()
+                        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.)
                         optimizer.step()
                 current_metrics[phase] += loss.item()
                 if phase == VALIDATION:
