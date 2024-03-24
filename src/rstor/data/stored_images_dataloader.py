@@ -47,6 +47,7 @@ class RestorationDataset(Dataset):
         self.degradation_noise = DegradationNoise(self.n_samples,
                                                   noise_stddev,
                                                   frozen_seed)
+        self.current_degradation = {}
 
     def __getitem__(self, index: int) -> Tuple[torch.Tensor, Union[torch.Tensor, None]]:
         """Access a specific image from dataset and augment
@@ -69,6 +70,10 @@ class RestorationDataset(Dataset):
         degraded_img = img_data.clone().unsqueeze(0)
         degraded_img = self.degradation_noise(degraded_img, index)
         degraded_img = degraded_img.squeeze(0)
+        self.current_degradation[index] = {
+            # blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
+            "noise_stddev": self.degradation_noise.current_degradation[index]["noise_stddev"]
+        }
         return degraded_img, img_data
 
     def __len__(self):

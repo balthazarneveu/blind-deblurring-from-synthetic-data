@@ -6,7 +6,10 @@ from rstor.properties import (
     BATCH_SIZE, SIZE,
     REDUCTION_SKIP,
     TRACES_TARGET, TRACES_DEGRADED, TRACES_RESTORED, TRACES_METRICS, TRACES_ALL,
-    SAMPLER_SATURATED
+    SAMPLER_SATURATED,
+    CONFIG_DEGRADATION,
+    DATASET_DIV2K,
+    DATASET_DL_DIV2K_512
 )
 from rstor.data.dataloader import get_data_loader
 from tqdm import tqdm
@@ -50,6 +53,8 @@ def get_parser(parser: Optional[argparse.ArgumentParser] = None, batch_mode=Fals
                         help="Noise standard deviation (a, b) as pairs separated by spaces, e.g., '0,50 8,8 6,10'")
     parser.add_argument("-n", "--number-of-images", type=int, default=None,
                         required=False, help="Number of images to process")
+    parser.add_argument("-d", "--dataset", type=str,
+                        choices=[None,  DATASET_DL_DIV2K_512, DATASET_DIV2K], default=None),
     return parser
 
 
@@ -57,7 +62,7 @@ def to_image(img: torch.Tensor):
     return img.permute(0, 2, 3, 1).cpu().numpy()
 
 
-def infer(model, dataloader, config, device, output_dir: Path, traces: List[str] = ALL_TRACES, number_of_images=None):
+def infer(model, dataloader, config, device, output_dir: Path, traces: List[str] = ALL_TRACES, number_of_images=None, degradation_key=CONFIG_DEAD_LEAVES):
     img_index = 0
     if TRACES_ALL in traces:
         traces = ALL_TRACES
@@ -81,7 +86,7 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
             for idx in range(img_restored.shape[0]):
                 degradation_parameters = dataloader.dataset.current_degradation[img_index]
                 common_prefix = f"{img_index:05d}_{img_degraded.shape[-3]:04d}x{img_degraded.shape[-2]:04d}"
-                common_prefix += f"_noise=[{config[DATALOADER][CONFIG_DEAD_LEAVES]['noise_stddev'][0]:02d},{config[DATALOADER][CONFIG_DEAD_LEAVES]['noise_stddev'][1]:02d}]"
+                common_prefix += f"_noise=[{config[DATALOADER][degradation_key]['noise_stddev'][0]:02d},{config[DATALOADER][degradation_key]['noise_stddev'][1]:02d}]"
                 suffix_deg = f"_noise={round(degradation_parameters['noise_stddev']):02d}"
                 save_path_pred = output_dir/f"{common_prefix}_pred{suffix_deg}_{config[PRETTY_NAME]}.png"
                 save_path_degr = output_dir/f"{common_prefix}_degr{suffix_deg}.png"
@@ -104,7 +109,7 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
                         current_metrics["out_"+key] = metrics_per_image[key][idx].item()
                     current_metrics["degradation"] = degradation_parameters
                     current_metrics["size"] = (img_degraded.shape[-3], img_degraded.shape[-2])
-                    current_metrics["deadleaves_config"] = config[DATALOADER][CONFIG_DEAD_LEAVES]
+                    current_metrics["deadleaves_config"] = config[DATALOADER][degradation_key]
                     current_metrics["restored"] = save_path_pred.relative_to(output_dir).as_posix()
                     current_metrics["degraded"] = save_path_degr.relative_to(output_dir).as_posix()
                     current_metrics["target"] = save_path_targ.relative_to(output_dir).as_posix()
@@ -132,7 +137,7 @@ def infer_main(argv, batch_mode=False):
     else:
         args = parser.parse_args(argv)
     device = "cpu" if args.cpu else DEVICE
-
+    dataset = args.dataset
     for exp in args.experiments:
         model_dict = get_default_models([exp], Path(args.models_storage), interactive_flag=False)
         # print(list(model_dict.keys()))
@@ -140,23 +145,32 @@ def infer_main(argv, batch_mode=False):
         model = current_model_dict["model"]
         config = current_model_dict["config"]
         for std_dev, size in product(args.std_dev, args.size):
-            config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
-                blur_kernel_half_size=[0, 0],
-                ds_factor=1,
-                noise_stddev=list(std_dev),
-                sampler=SAMPLER_SATURATED
-            )
-            config[DATALOADER]["gpu_gen"] = True
-            config[DATALOADER][SIZE] = size
-            config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
+            if dataset is None:
+                config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
+                    blur_kernel_half_size=[0, 0],
+                    ds_factor=1,
+                    noise_stddev=list(std_dev),
+                    sampler=SAMPLER_SATURATED
+                )
+                config[DATALOADER]["gpu_gen"] = True
+                config[DATALOADER][SIZE] = size
+                config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
+            else:
+                config[DATALOADER][CONFIG_DEGRADATION] = dict(
+                    noise_stddev=list(std_dev),
+                )
+                config[DATALOADER][NAME] = dataset
+                config[DATALOADER][SIZE] = size
+                config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
             dataloader = get_data_loader(config, frozen_seed=42)
             # print(config)
             output_dir = Path(args.output_dir)/(config[NAME] + "_" +
-                                                config[PRETTY_NAME]) #+ "_" + f"{size[0]:04d}x{size[1]:04d}")
+                                                config[PRETTY_NAME])  # + "_" + f"{size[0]:04d}x{size[1]:04d}")
             output_dir.mkdir(parents=True, exist_ok=True)
 
             all_metrics = infer(model, dataloader[VALIDATION], config, device, output_dir,
-                                traces=args.traces, number_of_images=args.number_of_images)
+                                traces=args.traces, number_of_images=args.number_of_images,
+                                degradation_key=CONFIG_DEAD_LEAVES if dataset is None else CONFIG_DEGRADATION)
             if all_metrics is not None:
                 # print(all_metrics)
                 df = pd.DataFrame(all_metrics).T
