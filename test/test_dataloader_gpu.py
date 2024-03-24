@@ -1,5 +1,5 @@
 import torch
-from rstor.data.dataloader import DeadLeavesDatasetGPU
+from rstor.data.synthetic_dataloader import DeadLeavesDatasetGPU
 import numba
 
 
@@ -45,11 +45,12 @@ def test_dead_leaves_dataset_gpu():
 
     # Test case 5: Visualize
     # dataset = DeadLeavesDatasetGPU(size=(256, 256), length=500, frozen_seed=44, number_of_circles=10_000,
-    #                                background_color=(0.2, 0.4, 0.6), colored=True, radius_min=1, radius_alpha=3,
-    #                                noise_stddev=(0, 0), ds_factor=1)
+    #                                 background_color=(0.2, 0.4, 0.6), colored=True, radius_min=1, radius_alpha=3,
+    #                                 noise_stddev=(0, 0), ds_factor=1)
     # item, item_tgt = dataset[0]
     # import matplotlib.pyplot as plt
     # plt.figure()
     # plt.imshow(item.permute(1, 2, 0).detach().cpu())
     # plt.show()
     # print("done")
+
