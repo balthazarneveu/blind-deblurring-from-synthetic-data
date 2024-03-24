@@ -21,6 +21,7 @@ class RestorationDataset(Dataset):
     def __init__(
         self,
         images_path: Path,
+        size: Tuple[int, int] = (128, 128),
         device: str = DEVICE,
         preloaded: bool = False,
         augmentation_list: Optional[list] = [],
@@ -42,7 +43,7 @@ class RestorationDataset(Dataset):
             self.data_list = [load_image(pth) for pth in tqdm(self.path_list)]
         else:
             self.data_list = self.path_list
-        self.cropper = RandomCrop(size=(512, 512))
+        self.cropper = RandomCrop(size=size)
         self.degradation_noise = DegradationNoise(self.n_samples,
                                                   noise_stddev,
                                                   frozen_seed)

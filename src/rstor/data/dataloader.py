@@ -58,11 +58,13 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         valid_files = all_files[cut_index:]
     dl_train = ds(
         train_files,
+        size=config[DATALOADER][SIZE],
         frozen_seed=None,
         **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
     dl_valid = ds(
         valid_files,
+        
         frozen_seed=frozen_seed,
         **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
@@ -97,8 +99,8 @@ if __name__ == "__main__":
                 }
             }
             dl_dict = get_data_loader(config)
-            # dl = dl_dict[TRAIN]
-            dl = dl_dict[VALIDATION]
+            dl = dl_dict[TRAIN]
+            # dl = dl_dict[VALIDATION]
         for i, (batch_inp, batch_target) in enumerate(dl):
             print(batch_inp.shape, batch_target.shape)  # Should print [batch_size, size[0], size[1], 3] for each batch
             if i == 1:  # Just to break the loop after two batches for demonstration

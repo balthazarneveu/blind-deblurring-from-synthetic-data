@@ -237,7 +237,6 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
         )
-        config[PRETTY_NAME] = "NafNET DL from disk - noisy 0-50"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
