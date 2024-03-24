@@ -10,7 +10,8 @@ from rstor.properties import (
     CONFIG_DEGRADATION,
     DATASET_DIV2K,
     DATASET_DL_DIV2K_512,
-    METRIC_PSNR, METRIC_SSIM
+    METRIC_PSNR, METRIC_SSIM,
+    DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_NONE
 )
 from rstor.data.dataloader import get_data_loader
 from tqdm import tqdm
@@ -56,6 +57,7 @@ def get_parser(parser: Optional[argparse.ArgumentParser] = None, batch_mode=Fals
                         required=False, help="Number of images to process")
     parser.add_argument("-d", "--dataset", type=str,
                         choices=[None,  DATASET_DL_DIV2K_512, DATASET_DIV2K], default=None),
+    parser.add_argument("-b", "--blur", action="store_true")
     return parser
 
 
@@ -142,6 +144,7 @@ def infer_main(argv, batch_mode=False):
         args = parser.parse_args(argv)
     device = "cpu" if args.cpu else DEVICE
     dataset = args.dataset
+    blur_flag = args.blur
     for exp in args.experiments:
         model_dict = get_default_models([exp], Path(args.models_storage), interactive_flag=False)
         # print(list(model_dict.keys()))
@@ -162,6 +165,7 @@ def infer_main(argv, batch_mode=False):
             else:
                 config[DATALOADER][CONFIG_DEGRADATION] = dict(
                     noise_stddev=list(std_dev),
+                    degradation_blur=DEGRADATION_BLUR_MAT if blur_flag else DEGRADATION_BLUR_NONE
                 )
                 config[DATALOADER][NAME] = dataset
                 config[DATALOADER][SIZE] = size

@@ -74,6 +74,9 @@ python scripts/interactive_inference_natural.py -e 1004  2000 -i "__kodak_datase
 ```
 
 #### Metrics and batched inference
+[Pretrained models](https://drive.google.com/drive/folders/1HO1FU6hUhezZYD6eDcqKb_pxBM6uLBoV?usp=drive_link)
+
+
 - Compare 2 models (1004 = stacked conv) versus (2000 NafNet)
 - At various noise levels (random range of standard deviation between (a,b) - so (5,5) simply means $\sigma=5$ for instance).
 - At various sizes (*results may depend on the input size due to receptive field considerations).
@@ -81,6 +84,13 @@ python scripts/interactive_inference_natural.py -e 1004  2000 -i "__kodak_datase
 ```bash
 python scripts/infer.py -e 1004 2000 -o __inference -t metrics --size "512,512 256,256 128,128" --std-dev "1,1 5,5 10,10 20,20 30,30 40,40 50,50 80,80" -n 5
 ```
+
+
+Infer with deblur
+```bash
+python scripts/infer.py -e 5000 -o __inference/deblur -t metrics --size "512,512" --std-dev "0,0" -n 2 --traces all --dataset div2k -b
+```
+
 
 Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
 
