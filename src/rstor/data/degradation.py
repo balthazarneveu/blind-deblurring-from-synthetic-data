@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, DATASET_BLUR_KERNEL_PATH, DEVICE
 import random
 from scipy.io import loadmat
+import cv2
 
 class Degradation():
     def __init__(self, 
@@ -50,7 +51,7 @@ class DegradationNoise(Degradation):
         }
         return x
     
-class DegradationBlur(Degradation):
+class DegradationBlurMat(Degradation):
     def __init__(self, 
                  length: int = 1000,
                  frozen_seed: int = None):
@@ -86,5 +87,48 @@ class DegradationBlur(Degradation):
         
         self.current_degradation[idx] = {
             "blur_kernel_id": kernel_id
+        }
+        return x
+
+class DegradationBlurGauss(Degradation):
+    def __init__(self, 
+                 length: int = 1000,
+                 blur_kernel_half_size: int = [0, 2],
+                 frozen_seed: int = None):
+        super().__init__(length, frozen_seed)
+        
+        self.blur_kernel_half_size = blur_kernel_half_size
+        # conversion to torch (the shape of the kernel is not constant)
+        if frozen_seed is not None:
+            random.seed(self.frozen_seed)
+            self.blur_kernel_half_size = [
+                (
+                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1]),
+                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
+                ) for _ in range(length)
+            ]
+        
+        
+    def __call__(self, x: torch.Tensor, idx: int):
+        # expects x of shape [b, c, h, w]
+        assert x.ndim == 4
+        assert x.shape[1] in [1, 3]
+        device = x.device
+        
+        if self.frozen_seed is not None:
+            k_size_x, k_size_y = self.blur_kernel_half_size[idx]
+        else:
+            k_size_x = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
+            k_size_y = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
+            
+        k_size_x = 2 * k_size_x + 1
+        k_size_y = 2 * k_size_y + 1
+        
+        x = x.squeeze(0).permute(1, 2, 0).cpu().numpy()
+        x = cv2.GaussianBlur(x, (k_size_x, k_size_y), 0)
+        x = torch.from_numpy(x).to(device).permute(2, 0, 1).unsqueeze(0)
+        
+        self.current_degradation[idx] = {
+            "blur_kernel_half_size": (k_size_x, k_size_y),
         }
         return x

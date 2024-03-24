@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from typing import Tuple
-from rstor.data.degradation import DegradationBlur, DegradationNoise
+from rstor.data.degradation import DegradationBlurMat, DegradationBlurGauss, DegradationNoise
 from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 import cv2
@@ -23,6 +23,7 @@ class DeadLeavesDataset(Dataset):
         blur_kernel_half_size: int = [0, 2],
         ds_factor: int = 5,
         noise_stddev: float = [0., 50.],
+        use_gaussian_kernel=True,
         **config_dead_leaves
         # number_of_circles: int = -1,
         # background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
@@ -38,12 +39,18 @@ class DeadLeavesDataset(Dataset):
         self.config_dead_leaves = config_dead_leaves
         self.blur_kernel_half_size = blur_kernel_half_size
         self.noise_stddev = noise_stddev
-
-        self.degradation_blur = DegradationBlur(length,
-                                           frozen_seed)
+        
+        self.use_gaussian_kernel = use_gaussian_kernel
+        if use_gaussian_kernel:
+            self.degradation_blur = DegradationBlurGauss(length,
+                                                         blur_kernel_half_size,
+                                                         frozen_seed)
+        else:
+            self.degradation_blur = DegradationBlurMat(length,
+                                                       frozen_seed)
         self.degradation_noise = DegradationNoise(length,
-                                             noise_stddev,
-                                             frozen_seed)
+                                                  noise_stddev,
+                                                  frozen_seed)
         self.current_degradation = {}
 
     def __len__(self):
@@ -67,8 +74,9 @@ class DeadLeavesDataset(Dataset):
         degraded_chart = self.degradation_blur(th_chart, idx)
         degraded_chart = self.degradation_noise(degraded_chart, idx)
         
+        blur_deg_str = "blur_kernel_half_size" if self.use_gaussian_kernel else "blur_kernel_id"
         self.current_degradation[idx] = {
-            "blur_kernel_id": self.degradation_blur.current_degradation[idx]["blur_kernel_id"],
+            blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
             "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
@@ -84,6 +92,7 @@ class DeadLeavesDatasetGPU(Dataset):
         blur_kernel_half_size: int = [0, 2],
         ds_factor: int = 5,
         noise_stddev: float = [0., 50.],
+        use_gaussian_kernel=True,
         **config_dead_leaves
         # number_of_circles: int = -1,
         # background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
@@ -107,8 +116,15 @@ class DeadLeavesDatasetGPU(Dataset):
         kernel = kernel / kernel.sum()
         self.downsample_kernel = kernel.repeat(3, 1, 1, 1)  # shape [3, 1, k_size, k_size]
 
-        self.degradation_blur = DegradationBlur(length,
-                                           frozen_seed)
+        self.use_gaussian_kernel = use_gaussian_kernel
+        if use_gaussian_kernel:
+            self.degradation_blur = DegradationBlurGauss(length,
+                                                         blur_kernel_half_size,
+                                                         frozen_seed)
+        else:
+            self.degradation_blur = DegradationBlurMat(length,
+                                                       frozen_seed)
+            
         self.degradation_noise = DegradationNoise(length,
                                              noise_stddev,
                                              frozen_seed)
@@ -146,8 +162,9 @@ class DeadLeavesDatasetGPU(Dataset):
         degraded_chart = self.degradation_blur(th_chart, idx)
         degraded_chart = self.degradation_noise(degraded_chart, idx)
         
+        blur_deg_str = "blur_kernel_half_size" if self.use_gaussian_kernel else "blur_kernel_id"
         self.current_degradation[idx] = {
-            "blur_kernel_id": self.degradation_blur.current_degradation[idx]["blur_kernel_id"],
+            blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
             "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
