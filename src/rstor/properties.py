@@ -46,7 +46,6 @@ DEGRADATION_BLUR_MAT = "mat"
 DEGRADATION_BLUR_GAUSS = "gauss"
 
 
-
 SAMPLER_SATURATED = "saturated"
 SAMPLER_UNIFORM = "uniform"
 SAMPLER_NATURAL = "natural"

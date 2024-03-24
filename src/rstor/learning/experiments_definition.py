@@ -286,26 +286,44 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla DIV2K_512 0-50 - noisy 0-50"
-    elif exp == 5000:  # ENABLE GRADIENT CLIPPING
+    elif exp == 5000:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 0-50 256x256"
+        config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 0.],
-            degradation_blur=DEGRADATION_BLUR_MAT, # Using .mat kernels
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
-    elif exp == 5001:  # ENABLE GRADIENT CLIPPING
+    elif exp == 5001:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet deblur - DIV2K_512 0-50 256x256"
+        config[PRETTY_NAME] = "NAFNet deblur - DIV2K_512 256x256"
         config[DATALOADER][NAME] = DATASET_DIV2K
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 0.],
-            degradation_blur=DEGRADATION_BLUR_MAT, # Using .mat kernels
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 6000:
+        config = presets_experiments(exp, b=32, n=50)
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[PRETTY_NAME] = "Vanilla deblur DL_DIV2K_512"
+    elif exp == 6001:
+        config = presets_experiments(exp, b=32, n=50)
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[PRETTY_NAME] = "Vanilla delbur DIV2K_512"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config

@@ -40,21 +40,21 @@ class RestorationDataset(Dataset):
             self.path_list = sorted(list(images_path.glob("*.png")))
         else:
             self.path_list = images_path
-        
+
         self.length = len(self.path_list)
-            
+
         self.n_samples = len(self.path_list)
         # If we can preload everything in memory, we can do it
         if preloaded:
             self.data_list = [load_image(pth) for pth in tqdm(self.path_list)]
         else:
             self.data_list = self.path_list
-        
+
         # if AUGMENTATION_FLIP in self.augmentation_list:
         #     img_data = augment_flip(img_data)
         # img_data = self.cropper(img_data)
         self.transforms = []
-        
+
         if self.frozen_seed is None:
             if AUGMENTATION_FLIP in self.augmentation_list:
                 self.transforms.append(transforms.RandomHorizontalFlip(p=0.5))
@@ -65,10 +65,9 @@ class RestorationDataset(Dataset):
         crop = transforms.RandomCrop(size) if frozen_seed is None else transforms.CenterCrop(size)
         self.transforms.append(crop)
         self.transforms = transforms.Compose(self.transforms)
-        
+
         # self.cropper = RandomCrop(size=size)
-        
-        
+
         self.degradation_blur_type = degradation_blur
         if degradation_blur == DEGRADATION_BLUR_GAUSS:
             self.degradation_blur = DegradationBlurGauss(self.length,
@@ -83,7 +82,7 @@ class RestorationDataset(Dataset):
             pass
         else:
             raise ValueError(f"Unknown degradation blur {degradation_blur}")
-            
+
         self.degradation_noise = DegradationNoise(self.length,
                                                   noise_stddev,
                                                   frozen_seed)
@@ -103,21 +102,20 @@ class RestorationDataset(Dataset):
         else:
             img_data = load_image(self.data_list[index])
         img_data = img_data.to(self.device)
-        
+
         # if AUGMENTATION_FLIP in self.augmentation_list:
         #     img_data = augment_flip(img_data)
         # img_data = self.cropper(img_data)
-        
+
         img_data = self.transforms(img_data)
         img_data = img_data.float()/255.
         degraded_img = img_data.clone().unsqueeze(0)
-        
-        
+
         self.current_degradation[index] = {}
         if self.degradation_blur_type != DEGRADATION_BLUR_NONE:
             degraded_img = self.degradation_blur(degraded_img, index)
             self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[index][self.blur_deg_str]
-        
+
         degraded_img = self.degradation_noise(degraded_img, index)
         self.current_degradation[index]["noise_stddev"] = self.degradation_noise.current_degradation[index]["noise_stddev"]
 
