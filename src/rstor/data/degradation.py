@@ -81,10 +81,27 @@ class DegradationBlurMat(Degradation):
             kernel_id = random.randint(0, self.n_kernels-1)
 
         kernel = self.kernels[kernel_id].to(device).repeat(3, 1, 1, 1).float()  # repeat for grouped conv
-
+        _, _, kh, kw = kernel.shape
         # We use padding = same to make
         # sure that the output size does not depend on the kernel.
-        x = F.conv2d(x, kernel, padding="same", groups=3)
+        
+        # define nn.Conf layer to define both padding mode and padding value...
+        conv_layer = torch.nn.Conv2d(in_channels=x.shape[1],
+                               out_channels=x.shape[1],
+                               kernel_size=(kh, kw),
+                               padding="same",
+                               padding_mode='replicate',
+                               groups=3,
+                               bias=False)
+        
+        # Set the predefined kernel as weights and freeze the parameters
+        with torch.no_grad():
+            conv_layer.weight = torch.nn.Parameter(kernel)
+            conv_layer.weight.requires_grad = False
+        # breakpoint()
+        x = conv_layer(x)
+        ## Alternative Functional version with 0 padding :
+        # x = F.conv2d(x, kernel, padding="same", groups=3)
 
         self.current_degradation[idx] = {
             "blur_kernel_id": kernel_id

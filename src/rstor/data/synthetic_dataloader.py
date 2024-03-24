@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch.utils.data import Dataset
 from typing import Tuple
 from rstor.data.degradation import DegradationBlurMat, DegradationBlurGauss, DegradationNoise
+from rstor.properties import DEVICE, AUGMENTATION_FLIP, DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS
 from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 import cv2
@@ -23,7 +24,7 @@ class DeadLeavesDataset(Dataset):
         blur_kernel_half_size: int = [0, 2],
         ds_factor: int = 5,
         noise_stddev: float = [0., 50.],
-        use_gaussian_kernel=True,
+        degradation_blur=DEGRADATION_BLUR_NONE,
         **config_dead_leaves
         # number_of_circles: int = -1,
         # background_color: Optional[Tuple[float, float, float]] = (0.5, 0.5, 0.5),
@@ -39,16 +40,24 @@ class DeadLeavesDataset(Dataset):
         self.config_dead_leaves = config_dead_leaves
         self.blur_kernel_half_size = blur_kernel_half_size
         self.noise_stddev = noise_stddev
+        
 
-        self.use_gaussian_kernel = use_gaussian_kernel
-        if use_gaussian_kernel:
-            self.degradation_blur = DegradationBlurGauss(length,
+        self.degradation_blur_type = degradation_blur
+        if degradation_blur == DEGRADATION_BLUR_GAUSS:
+            self.degradation_blur = DegradationBlurGauss(self.length,
                                                          blur_kernel_half_size,
                                                          frozen_seed)
-        else:
-            self.degradation_blur = DegradationBlurMat(length,
+            self.blur_deg_str = "blur_kernel_half_size"
+        elif degradation_blur == DEGRADATION_BLUR_MAT:
+            self.degradation_blur = DegradationBlurMat(self.length,
                                                        frozen_seed)
-        self.degradation_noise = DegradationNoise(length,
+            self.blur_deg_str = "blur_kernel_id"
+        elif degradation_blur == DEGRADATION_BLUR_NONE:
+            pass
+        else:
+            raise ValueError(f"Unknown degradation blur {degradation_blur}")
+            
+        self.degradation_noise = DegradationNoise(self.length,
                                                   noise_stddev,
                                                   frozen_seed)
         self.current_degradation = {}
@@ -70,16 +79,16 @@ class DeadLeavesDataset(Dataset):
             chart = chart[::self.ds_factor, ::self.ds_factor]
 
         th_chart = torch.from_numpy(chart).permute(2, 0, 1).unsqueeze(0)
+        degraded_chart = th_chart
 
-        degraded_chart = self.degradation_blur(th_chart, idx)
+        self.current_degradation[idx] = {}
+        if self.degradation_blur_type != DEGRADATION_BLUR_NONE:
+            degraded_chart = self.degradation_blur(degraded_chart, idx)
+            self.current_degradation[idx][self.blur_deg_str] = self.degradation_blur.current_degradation[idx][self.blur_deg_str]
+        
         degraded_chart = self.degradation_noise(degraded_chart, idx)
-
-        blur_deg_str = "blur_kernel_half_size" if self.use_gaussian_kernel else "blur_kernel_id"
-        self.current_degradation[idx] = {
-            blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
-            "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
-        }
-
+        self.current_degradation[idx]["noise_stddev"] = self.degradation_noise.current_degradation[idx]["noise_stddev"]
+        
         degraded_chart = degraded_chart.squeeze(0)
         th_chart = th_chart.squeeze(0)
 
