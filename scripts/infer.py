@@ -9,7 +9,8 @@ from rstor.properties import (
     SAMPLER_SATURATED,
     CONFIG_DEGRADATION,
     DATASET_DIV2K,
-    DATASET_DL_DIV2K_512
+    DATASET_DL_DIV2K_512,
+    METRIC_PSNR, METRIC_SSIM
 )
 from rstor.data.dataloader import get_data_loader
 from tqdm import tqdm
@@ -62,7 +63,8 @@ def to_image(img: torch.Tensor):
     return img.permute(0, 2, 3, 1).cpu().numpy()
 
 
-def infer(model, dataloader, config, device, output_dir: Path, traces: List[str] = ALL_TRACES, number_of_images=None, degradation_key=CONFIG_DEAD_LEAVES):
+def infer(model, dataloader, config, device, output_dir: Path, traces: List[str] = ALL_TRACES, number_of_images=None, degradation_key=CONFIG_DEAD_LEAVES,
+          chosen_metrics=[METRIC_PSNR, METRIC_SSIM]):
     img_index = 0
     if TRACES_ALL in traces:
         traces = ALL_TRACES
@@ -77,8 +79,10 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
             img_target = img_target.to(device)
             img_restored = model(img_degraded)
             if TRACES_METRICS in traces:
-                metrics_input_per_image = compute_metrics(img_degraded, img_target, reduction=REDUCTION_SKIP)
-                metrics_per_image = compute_metrics(img_restored, img_target, reduction=REDUCTION_SKIP)
+                metrics_input_per_image = compute_metrics(
+                    img_degraded, img_target, reduction=REDUCTION_SKIP, chosen_metrics=chosen_metrics)
+                metrics_per_image = compute_metrics(
+                    img_restored, img_target, reduction=REDUCTION_SKIP, chosen_metrics=chosen_metrics)
                 # print(metrics_per_image)
             img_degraded = to_image(img_degraded)
             img_target = to_image(img_target)
