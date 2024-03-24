@@ -158,14 +158,14 @@ def infer_main(argv, batch_mode=False):
                 )
                 config[DATALOADER]["gpu_gen"] = True
                 config[DATALOADER][SIZE] = size
-                config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
+                config[DATALOADER][BATCH_SIZE][VALIDATION] = 1 if size[0] > 512 else 4
             else:
                 config[DATALOADER][CONFIG_DEGRADATION] = dict(
                     noise_stddev=list(std_dev),
                 )
                 config[DATALOADER][NAME] = dataset
                 config[DATALOADER][SIZE] = size
-                config[DATALOADER][BATCH_SIZE][VALIDATION] = 4
+                config[DATALOADER][BATCH_SIZE][VALIDATION] = 1 if size[0] > 512 else 4
             dataloader = get_data_loader(config, frozen_seed=42)
             # print(config)
             output_dir = Path(args.output_dir)/(config[NAME] + "_" +
