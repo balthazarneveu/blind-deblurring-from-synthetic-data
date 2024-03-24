@@ -61,7 +61,7 @@ class DegradationBlurMat(Degradation):
         kernels = loadmat(DATASET_BLUR_KERNEL_PATH)["kernels"].squeeze()
         # conversion to torch (the shape of the kernel is not constant)
         self.kernels = tuple([
-            torch.from_numpy(kernel).unsqueeze(0).unsqueeze(0)
+            torch.from_numpy(kernel/kernel.sum(keepdims=True)).unsqueeze(0).unsqueeze(0)
             for kernel in kernels])
         self.n_kernels = len(self.kernels)
 
