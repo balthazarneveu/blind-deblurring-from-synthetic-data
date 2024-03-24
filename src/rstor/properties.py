@@ -49,6 +49,7 @@ DATASET_FOLDER = "__dataset"
 DATASET_PATH = Path(__file__).parent.parent.parent/DATASET_FOLDER
 DATASET_DL_RANDOMRGB_1024 = "deadleaves_randomrgb_1024"
 DATASET_DL_DIV2K_1024 = "deadleaves_div2k_1024"
+DATASET_DL_DIV2K_512 = "deadleaves_div2k_512"
 AUGMENTATION_FLIP = "flip"
 
 

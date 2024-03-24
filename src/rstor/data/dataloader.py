@@ -2,7 +2,7 @@ from torch.utils.data import DataLoader
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME
 from rstor.data.synthetic_dataloader import DeadLeavesDataset, DeadLeavesDatasetGPU
 from rstor.data.stored_images_dataloader import RestorationDataset
-from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_PATH
+from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_DL_DIV2K_512, DATASET_PATH
 from typing import Optional
 from random import seed, shuffle
 
@@ -48,7 +48,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         valid_root = dataset_root/"DIV2K_valid_HR"/"DIV2K_valid_HR"
         train_files = sorted(list(train_root.glob("*.png")))
         valid_files = sorted(list(valid_root.glob("*.png")))
-    elif dataset_name in [DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
+    elif dataset_name in [DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
         dataset_root = DATASET_PATH/dataset_name
         all_files = sorted(list(dataset_root.glob("*.png")))
         seed(frozen_seed)
@@ -78,7 +78,7 @@ def get_data_loader(config, frozen_seed=42):
 
 if __name__ == "__main__":
     # Example of usage synthetic dataset
-    for dataset_name in [None, DATASET_DIV2K, DATASET_DL_DIV2K_1024]:
+    for dataset_name in [None, DATASET_DIV2K, DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024]:
         if dataset_name is None:
             dead_leaves_dataset = DeadLeavesDatasetGPU(colored=True)
             dl = DataLoader(dead_leaves_dataset, batch_size=4, shuffle=True)
@@ -86,7 +86,6 @@ if __name__ == "__main__":
             # Example of usage stored images dataset
             config = {
                 DATALOADER: {
-                    # NAME: DATASET_DL_RANDOMRGB_1024,
                     NAME: dataset_name,
                     SIZE: (128, 128),
                     BATCH_SIZE: {
