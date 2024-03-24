@@ -2,10 +2,11 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from rstor.data.augmentation import augment_flip
 from rstor.data.degradation import DegradationBlurMat, DegradationBlurGauss, DegradationNoise
-from rstor.properties import DEVICE, AUGMENTATION_FLIP, DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS
+from rstor.properties import DEVICE, AUGMENTATION_FLIP, AUGMENTATION_ROTATE, DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS
 from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
 from typing import Tuple, Optional, Union
-from torchvision.transforms import RandomCrop
+from torchvision import transforms
+# from torchvision.transforms import RandomCrop
 from pathlib import Path
 from tqdm import tqdm
 from time import time
@@ -48,7 +49,24 @@ class RestorationDataset(Dataset):
             self.data_list = [load_image(pth) for pth in tqdm(self.path_list)]
         else:
             self.data_list = self.path_list
-        self.cropper = RandomCrop(size=size)
+        
+        # if AUGMENTATION_FLIP in self.augmentation_list:
+        #     img_data = augment_flip(img_data)
+        # img_data = self.cropper(img_data)
+        self.transforms = []
+        
+        if self.frozen_seed is None:
+            if AUGMENTATION_FLIP in self.augmentation_list:
+                self.transforms.append(transforms.RandomHorizontalFlip(p=0.5))
+                self.transforms.append(transforms.RandomVerticalFlip(p=0.5))
+            if AUGMENTATION_ROTATE in self.augmentation_list:
+                self.transforms.append(transforms.RandomRotation(degrees=180))
+
+        crop = transforms.RandomCrop(size) if frozen_seed is None else transforms.CenterCrop(size)
+        self.transforms.append(crop)
+        self.transforms = transforms.Compose(self.transforms)
+        
+        # self.cropper = RandomCrop(size=size)
         
         
         self.degradation_blur_type = degradation_blur
@@ -85,9 +103,12 @@ class RestorationDataset(Dataset):
         else:
             img_data = load_image(self.data_list[index])
         img_data = img_data.to(self.device)
-        if AUGMENTATION_FLIP in self.augmentation_list:
-            img_data = augment_flip(img_data)
-        img_data = self.cropper(img_data)
+        
+        # if AUGMENTATION_FLIP in self.augmentation_list:
+        #     img_data = augment_flip(img_data)
+        # img_data = self.cropper(img_data)
+        
+        img_data = self.transforms(img_data)
         img_data = img_data.float()/255.
         degraded_img = img_data.clone().unsqueeze(0)
         
