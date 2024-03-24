@@ -231,14 +231,29 @@ def get_experiment_config(exp: int) -> dict:
         )
         config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
     elif exp == 3000:
-        config = presets_experiments(exp, n=2,  b=4, model_preset="NAFNet")
+        config = presets_experiments(exp, n=30,  b=4, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
         )
-    elif exp == 3001:
-        config = presets_experiments(exp, b=8, n=20)
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 3010:
+        config = presets_experiments(exp, n=50,  b=4, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet Light denoise - DL_DIV2K_512 0-50"
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 3020:
+        config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
