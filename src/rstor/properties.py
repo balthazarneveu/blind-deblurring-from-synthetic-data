@@ -41,6 +41,11 @@ TRACES_RESTORED = "restored"
 TRACES_METRICS = "metrics"
 TRACES_ALL = "all"
 
+DEGRADATION_BLUR_NONE = "none"
+DEGRADATION_BLUR_MAT = "mat"
+DEGRADATION_BLUR_GAUSS = "gauss"
+
+
 SAMPLER_SATURATED = "saturated"
 SAMPLER_UNIFORM = "uniform"
 SAMPLER_NATURAL = "natural"
@@ -54,6 +59,7 @@ DATASET_DL_DIV2K_512 = "deadleaves_div2k_512"
 
 DATASET_BLUR_KERNEL_PATH = DATASET_PATH / "kernels" / "custom_blur_centered.mat"
 AUGMENTATION_FLIP = "flip"
+AUGMENTATION_ROTATE = "rotate"
 
 
 DATASET_DIV2K = "div2k"
