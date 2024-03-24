@@ -79,8 +79,12 @@ class DeadLeavesDataset(Dataset):
             blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
             "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
+        
+        degraded_chart = degraded_chart.squeeze(0)
+        th_chart = th_chart.squeeze(0)
+        
 
-        return degraded_chart.squeeze(0), th_chart.squeeze(0)
+        return degraded_chart, th_chart
 
 
 class DeadLeavesDatasetGPU(Dataset):
@@ -168,4 +172,7 @@ class DeadLeavesDatasetGPU(Dataset):
             "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
-        return degraded_chart.squeeze(0), th_chart.squeeze(0)
+        degraded_chart = degraded_chart.squeeze(0)
+        th_chart = th_chart.squeeze(0)
+
+        return degraded_chart, th_chart

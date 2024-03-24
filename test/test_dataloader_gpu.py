@@ -54,4 +54,3 @@ def test_dead_leaves_dataset_gpu():
     # plt.show()
     # print("done")
 
-test_dead_leaves_dataset_gpu()
