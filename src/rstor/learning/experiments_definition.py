@@ -237,6 +237,13 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
         )
+    elif exp == 3001:
+        config = presets_experiments(exp, b=8, n=20)
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla DL_DIV2K_512 0-50 - noisy 0-50"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
