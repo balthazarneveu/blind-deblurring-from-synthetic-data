@@ -34,6 +34,7 @@ class DegradationNoise(Degradation):
                                  random.random() + self.noise_stddev[0] for _ in range(length)]
 
     def __call__(self, x: torch.Tensor, idx: int):
+        # WARNING! INPLACE OPERATIONS!!!!!
         # expects x of shape [b, c, h, w]
         assert x.ndim == 4
         assert x.shape[1] in [1, 3]

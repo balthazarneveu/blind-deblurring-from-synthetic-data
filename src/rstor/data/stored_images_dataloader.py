@@ -66,7 +66,8 @@ class RestorationDataset(Dataset):
             img_data = augment_flip(img_data)
         img_data = self.cropper(img_data)
         img_data = img_data.float()/255.
-        degraded_img = self.degradation_noise(img_data.unsqueeze(0), index)
+        degraded_img = img_data.clone().unsqueeze(0)
+        degraded_img = self.degradation_noise(degraded_img, index)
         degraded_img = degraded_img.squeeze(0)
         return degraded_img, img_data
 
