@@ -95,7 +95,7 @@ def get_experiment_config(exp: int) -> dict:
         )
         config[PRETTY_NAME] = "Vanilla denoise only - ds=1 - noisy 0-50"
     elif exp == -4:
-        config = presets_experiments(exp, n=20)
+        config = presets_experiments(exp, b=4, n=20)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
