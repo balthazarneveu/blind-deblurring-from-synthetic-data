@@ -230,6 +230,14 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
+    elif exp == 3000:
+        config = presets_experiments(exp, n=2,  b=4, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50"
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "NafNET DL from disk - noisy 0-50"
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
