@@ -1,8 +1,8 @@
 from torch.utils.data import DataLoader
-from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME
+from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME, CONFIG_DEGRADATION
 from rstor.data.synthetic_dataloader import DeadLeavesDataset, DeadLeavesDatasetGPU
 from rstor.data.stored_images_dataloader import RestorationDataset
-from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_PATH
+from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_DL_DIV2K_512, DATASET_PATH
 from typing import Optional
 from random import seed, shuffle
 
@@ -48,7 +48,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         valid_root = dataset_root/"DIV2K_valid_HR"/"DIV2K_valid_HR"
         train_files = sorted(list(train_root.glob("*.png")))
         valid_files = sorted(list(valid_root.glob("*.png")))
-    elif dataset_name in [DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
+    elif dataset_name in [DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
         dataset_root = DATASET_PATH/dataset_name
         all_files = sorted(list(dataset_root.glob("*.png")))
         seed(frozen_seed)
@@ -58,11 +58,15 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         valid_files = all_files[cut_index:]
     dl_train = ds(
         train_files,
-        frozen_seed=None
+        size=config[DATALOADER][SIZE],
+        frozen_seed=None,
+        **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
     dl_valid = ds(
         valid_files,
-        frozen_seed=frozen_seed
+        
+        frozen_seed=frozen_seed,
+        **config[DATALOADER].get(CONFIG_DEGRADATION, {})
     )
     dl_dict = create_dataloaders(config, dl_train, dl_valid)
     return dl_dict
@@ -78,7 +82,7 @@ def get_data_loader(config, frozen_seed=42):
 
 if __name__ == "__main__":
     # Example of usage synthetic dataset
-    for dataset_name in [None, DATASET_DIV2K, DATASET_DL_DIV2K_1024]:
+    for dataset_name in [DATASET_DIV2K, None, DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024]:
         if dataset_name is None:
             dead_leaves_dataset = DeadLeavesDatasetGPU(colored=True)
             dl = DataLoader(dead_leaves_dataset, batch_size=4, shuffle=True)
@@ -86,7 +90,6 @@ if __name__ == "__main__":
             # Example of usage stored images dataset
             config = {
                 DATALOADER: {
-                    # NAME: DATASET_DL_RANDOMRGB_1024,
                     NAME: dataset_name,
                     SIZE: (128, 128),
                     BATCH_SIZE: {
@@ -96,8 +99,8 @@ if __name__ == "__main__":
                 }
             }
             dl_dict = get_data_loader(config)
-            # dl = dl_dict[TRAIN]
-            dl = dl_dict[VALIDATION]
+            dl = dl_dict[TRAIN]
+            # dl = dl_dict[VALIDATION]
         for i, (batch_inp, batch_target) in enumerate(dl):
             print(batch_inp.shape, batch_target.shape)  # Should print [batch_size, size[0], size[1], 3] for each batch
             if i == 1:  # Just to break the loop after two batches for demonstration
