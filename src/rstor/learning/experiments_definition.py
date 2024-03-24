@@ -331,6 +331,26 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 5002:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 256x256"
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 0.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 5003:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet deblur - DIV2K_512 256x256"
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 0.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
     elif exp == 6000:
         config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
