@@ -104,7 +104,6 @@ class DeadLeavesDatasetGPU(Dataset):
         # radius_mean: Optional[int] = -1,
         # radius_stddev: Optional[int] = -1,
     ):
-        print("seed :", frozen_seed)
         self.frozen_seed = frozen_seed
         self.ds_factor = ds_factor
         self.size = (size[0]*ds_factor, size[1]*ds_factor)
@@ -123,8 +122,6 @@ class DeadLeavesDatasetGPU(Dataset):
 
         self.degradation_blur = DegradationBlur(length,
                                            frozen_seed)
-        if frozen_seed is not None:
-            print(self.degradation_blur.kernel_ids[0])
         self.degradation_noise = DegradationNoise(length,
                                              noise_stddev,
                                              frozen_seed)
