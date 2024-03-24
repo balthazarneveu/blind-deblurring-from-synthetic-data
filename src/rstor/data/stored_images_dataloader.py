@@ -120,6 +120,10 @@ class RestorationDataset(Dataset):
         self.current_degradation[index]["noise_stddev"] = self.degradation_noise.current_degradation[index]["noise_stddev"]
 
         degraded_img = degraded_img.squeeze(0)
+        self.current_degradation[index] = {
+            # blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
+            "noise_stddev": self.degradation_noise.current_degradation[index]["noise_stddev"]
+        }
         return degraded_img, img_data
 
     def __len__(self):

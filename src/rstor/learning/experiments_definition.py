@@ -244,7 +244,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][SIZE] = (256, 256)
     elif exp == 3001:  # ENABLE GRADIENT CLIPPING
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50 256x256"
+        config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
@@ -252,7 +252,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][SIZE] = (256, 256)
     elif exp == 3002:  # ENABLE GRADIENT CLIPPING
         config = presets_experiments(exp, n=30,  b=16, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50 128x128"
+        config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_DIV2K_512 0-50 128x128"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
@@ -260,7 +260,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][SIZE] = (128, 128)
     elif exp == 3010 or exp == 3011:  # exp 3011 = REDO with Gradient clipping
         config = presets_experiments(exp, n=50,  b=4, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet Light denoise - DL_DIV2K_512 0-50 256x256"
+        config[PRETTY_NAME] = "NAFNet3.4M Light denoise - DL_DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
@@ -279,6 +279,9 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla DL_DIV2K_512 0-50 - noisy 0-50"
+    # ---------------------------------
+    # Pure DIV2K trainings!
+    # ---------------------------------
     elif exp == 3120:
         config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DIV2K
@@ -286,6 +289,28 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla DIV2K_512 0-50 - noisy 0-50"
+    elif exp == 3111:
+        config = presets_experiments(exp, n=50,  b=4, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet3.4M Light denoise - DIV2K_512 0-50 256x256"
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 3101:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet41.4M denoise - DIV2K_512 0-50 256x256"
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
     elif exp == 5000:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 256x256"
