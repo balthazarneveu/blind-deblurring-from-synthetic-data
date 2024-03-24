@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch.utils.data import Dataset
 from typing import Tuple
+from rstor.data.degradation import DegradationBlur, DegradationNoise
 from rstor.synthetic_data.dead_leaves_cpu import cpu_dead_leaves_chart
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 import cv2
@@ -103,7 +104,7 @@ class DeadLeavesDatasetGPU(Dataset):
         # radius_mean: Optional[int] = -1,
         # radius_stddev: Optional[int] = -1,
     ):
-
+        print("seed :", frozen_seed)
         self.frozen_seed = frozen_seed
         self.ds_factor = ds_factor
         self.size = (size[0]*ds_factor, size[1]*ds_factor)
@@ -120,19 +121,13 @@ class DeadLeavesDatasetGPU(Dataset):
         kernel = kernel / kernel.sum()
         self.downsample_kernel = kernel.repeat(3, 1, 1, 1)  # shape [3, 1, k_size, k_size]
 
-        self.blur_kernel_half_size = blur_kernel_half_size
-        self.noise_stddev = noise_stddev
-
+        self.degradation_blur = DegradationBlur(length,
+                                           frozen_seed)
         if frozen_seed is not None:
-            random.seed(self.frozen_seed)
-            self.blur_kernel_half_size = [
-                (
-                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1]),
-                    random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-                ) for _ in range(length)
-            ]
-            self.noise_stddev = [(self.noise_stddev[1] - self.noise_stddev[0]) *
-                                 random.random() + self.noise_stddev[0] for _ in range(length)]
+            print(self.degradation_blur.kernel_ids[0])
+        self.degradation_noise = DegradationNoise(length,
+                                             noise_stddev,
+                                             frozen_seed)
         self.current_degradation = {}
 
     def __len__(self) -> int:
@@ -151,12 +146,10 @@ class DeadLeavesDatasetGPU(Dataset):
 
         # Return numba device array
         numba_chart = gpu_dead_leaves_chart(self.size, seed=seed, **self.config_dead_leaves)
-        if self.ds_factor > 1:
-            # print(f"Downsampling {chart.shape} with factor {self.ds_factor}...")
-
-            # Downsample using strided gaussian conv (sigma=3/5)
-            th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE, device="cuda")[
+        th_chart = torch.as_tensor(numba_chart, dtype=DEFAULT_TORCH_FLOAT_TYPE, device="cuda")[
                 None].permute(0, 3, 1, 2)  # [1, c, h, w]
+        if self.ds_factor > 1:
+            # Downsample using strided gaussian conv (sigma=3/5)
             th_chart = F.pad(th_chart,
                              pad=(2, 2, 0, 0),
                              mode="replicate")
@@ -164,31 +157,14 @@ class DeadLeavesDatasetGPU(Dataset):
                                 self.downsample_kernel,
                                 padding='valid',
                                 groups=3,
-                                stride=self.ds_factor).squeeze(0)
+                                stride=self.ds_factor)
 
-            # Convert back to numba
-            numba_chart = cuda.as_cuda_array(th_chart.permute(1, 2, 0))  # [h, w, c]
-
-        # convert back to numpy (temporary for legacy)
-        chart = numba_chart.copy_to_host()
-        if self.frozen_seed is not None:
-            k_size_x, k_size_y = self.blur_kernel_half_size[idx]
-            std_dev = self.noise_stddev[idx]
-        else:
-            k_size_x = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-            k_size_y = random.randint(self.blur_kernel_half_size[0], self.blur_kernel_half_size[1])
-            std_dev = (self.noise_stddev[1] - self.noise_stddev[0]) * random.random() + self.noise_stddev[0]
-        k_size_x = 2 * k_size_x + 1
-        k_size_y = 2 * k_size_y + 1
-        degraded_chart = cv2.GaussianBlur(chart, (k_size_x, k_size_y), 0)
-        if std_dev > 0.:
-            # print(f"Adding noise with std_dev={std_dev}...")
-            degraded_chart += (std_dev/255.)*np.random.randn(*degraded_chart.shape)
+        degraded_chart = self.degradation_blur(th_chart, idx)
+        degraded_chart = self.degradation_noise(degraded_chart, idx)
+        
         self.current_degradation[idx] = {
-            "blur_kernel_half_size": (k_size_x, k_size_y),
-            "noise_stddev": std_dev
+            "blur_kernel_id": self.degradation_blur.current_degradation[idx]["blur_kernel_id"],
+            "noise_stddev": self.degradation_noise.current_degradation[idx]["noise_stddev"]
         }
 
-        def numpy_to_torch(ndarray):
-            return torch.from_numpy(ndarray).permute(-1, 0, 1).float()
-        return numpy_to_torch(degraded_chart), numpy_to_torch(chart)
+        return degraded_chart.squeeze(0), th_chart.squeeze(0)
