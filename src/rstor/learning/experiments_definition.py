@@ -454,6 +454,16 @@ def get_experiment_config(exp: int) -> dict:
         )
         config[PRETTY_NAME] = "NafNet Light deblur DIV2K"
         config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 7002:
+        config = presets_experiments(exp, n=20,  b=8, model_preset="UNet")
+        config[PRETTY_NAME] = "UNET deblur - DIV2K"
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 0.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
