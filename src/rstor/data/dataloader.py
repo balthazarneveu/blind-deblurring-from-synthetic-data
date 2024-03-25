@@ -1,8 +1,11 @@
 from torch.utils.data import DataLoader
-from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME, CONFIG_DEGRADATION
 from rstor.data.synthetic_dataloader import DeadLeavesDataset, DeadLeavesDatasetGPU
 from rstor.data.stored_images_dataloader import RestorationDataset
-from rstor.properties import DATASET_DIV2K, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_DL_DIV2K_512, DATASET_PATH
+from rstor.properties import (
+    DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE, NAME, CONFIG_DEGRADATION,
+    DATASET_SYNTH_LIST, DATASET_DIV2K,
+    DATASET_PATH
+)
 from typing import Optional
 from random import seed, shuffle
 
@@ -49,7 +52,7 @@ def get_data_loader_from_disk(config, frozen_seed: Optional[int] = 42) -> dict:
         train_files = sorted(list(train_root.glob("*.png")))
         train_files = 5*train_files  # Just to get 4000 elements...
         valid_files = sorted(list(valid_root.glob("*.png")))
-    elif dataset_name in [DATASET_DL_DIV2K_512, DATASET_DL_DIV2K_1024, DATASET_DL_RANDOMRGB_1024]:
+    elif dataset_name in DATASET_SYNTH_LIST:
         dataset_root = DATASET_PATH/dataset_name
         all_files = sorted(list(dataset_root.glob("*.png")))
         seed(frozen_seed)

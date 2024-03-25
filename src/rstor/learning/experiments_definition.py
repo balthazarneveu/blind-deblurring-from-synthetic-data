@@ -7,7 +7,8 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               CONFIG_DEGRADATION,
                               PRETTY_NAME,
                               DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS,
-                              AUGMENTATION_FLIP, AUGMENTATION_ROTATE)
+                              AUGMENTATION_FLIP, AUGMENTATION_ROTATE,
+                              DATASET_DL_EXTRAPRIMITIVES_DIV2K_512)
 
 
 from typing import Tuple
@@ -234,6 +235,9 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla denoise only - ds=5 - noisy 0-50"
+    # ---------------------------------
+    # Pure DL DENOISING trainings!
+    # ---------------------------------
     elif exp == 3000:
         config = presets_experiments(exp, n=30,  b=4, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet denoise - DL_DIV2K_512 0-50"
@@ -280,7 +284,7 @@ def get_experiment_config(exp: int) -> dict:
         )
         config[PRETTY_NAME] = "Vanilla DL_DIV2K_512 0-50 - noisy 0-50"
     # ---------------------------------
-    # Pure DIV2K trainings!
+    # Pure DIV2K DENOISING trainings!
     # ---------------------------------
     elif exp == 3120:
         config = presets_experiments(exp, b=32, n=50)
@@ -293,9 +297,7 @@ def get_experiment_config(exp: int) -> dict:
         config = presets_experiments(exp, n=50,  b=4, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet3.4M Light denoise - DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DIV2K
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.]
-        )
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(noise_stddev=[0., 50.])
         config[MODEL][ARCHITECTURE] = dict(
             width=64,
             enc_blk_nums=[1, 1, 2],
@@ -311,6 +313,38 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[DATALOADER][SIZE] = (256, 256)
+    # ---------------------------------
+    # Pure EXTRA PRIMITIVES
+    # ---------------------------------
+    elif exp == 3030:
+        config = presets_experiments(exp, b=128, n=50)
+        config[DATALOADER][NAME] = DATASET_DL_EXTRAPRIMITIVES_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[PRETTY_NAME] = "Vanilla DL_PRIMITIVES_512 0-50 - noisy 0-50"
+        # config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 3040:
+        config = presets_experiments(exp, n=50,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet3.4M Light denoise - DL_PRIMITIVES_512 0-50 256x256"
+        config[DATALOADER][NAME] = DATASET_DL_EXTRAPRIMITIVES_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(noise_stddev=[0., 50.])
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 3050:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_PRIMITIVES_512 0-50 256x256"
+        config[DATALOADER][NAME] = DATASET_DL_EXTRAPRIMITIVES_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(noise_stddev=[0., 50.])
+        config[DATALOADER][SIZE] = (256, 256)
+    # ---------------------------------
+    # DEBLURRING
+    # ---------------------------------
     elif exp == 5000:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet deblur - DL_DIV2K_512 256x256"
@@ -351,7 +385,7 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
-    elif exp == 6000:
+    elif exp == 6000:  # -> FAILED, no kernels normalization!
         config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
@@ -369,7 +403,7 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[PRETTY_NAME] = "Vanilla deblur DL_DIV2K_512"
-    elif exp == 6001:
+    elif exp == 6001:  # -> FAILED, no kernels normalization!
         config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DIV2K
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
