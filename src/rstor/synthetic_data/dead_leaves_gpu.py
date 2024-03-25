@@ -18,7 +18,8 @@ def gpu_dead_leaves_chart(
         seed: int = None,
         reverse=True,
         sampler=SAMPLER_UNIFORM,
-        natural_image_list=None
+        natural_image_list=None,
+        circle_primitives: bool = True
 ) -> np.ndarray:
     center_x, center_y, radius, color = define_dead_leaves_chart(
         size,
@@ -39,13 +40,14 @@ def gpu_dead_leaves_chart(
         radia=radius,
         colors=color,
         background=background_color,
-        reverse=reverse
+        reverse=reverse,
+        circle_primitives=circle_primitives
     )
 
     return chart
 
 
-def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
+def _generate_dead_leaves(size, centers, radia, colors, background, reverse, circle_primitives: bool):
     assert centers.ndim == 2
     ny, nx = size
     nc = colors.shape[-1]
@@ -69,7 +71,9 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
             centers_,
             radia_,
             colors_,
-            background)
+            background,
+            circle_primitives
+        )
     else:
         cuda_dead_leaves_gen[blockspergrid, threadsperblock](
             generation_,
@@ -82,7 +86,7 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse):
 
 
 @cuda.jit(cache=False)
-def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background):
+def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background, circle_primitives: bool):
     idx, idy = cuda.grid(2)
     ny, nx, nc = generation.shape
 
@@ -100,12 +104,38 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
         # Naive thread diverging version
         r = radia[disc_id]
         r_sq = r*r
+        if circle_primitives:
+            if dist_sq <= r_sq:
+                # Copy back to global memory
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c]
+                return
+        else:
 
-        if dist_sq <= r_sq:
-            # Copy back to global memory
-            for c in range(nc):
-                generation[idy, idx, c] = colors[disc_id, c]
-            return
+            if (disc_id % 4) == 0 and dist_sq <= r_sq:
+                # Copy back to global memory
+                alpha = dist_sq/r_sq
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+                return
+            elif (disc_id % 4) == 1 and (abs(dx)+abs(dy)) <= r:
+                # Copy back to global memory
+                alpha = dist_sq/r_sq
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+                return
+            elif (disc_id % 4) == 2 and abs(dx) <= r and abs(dy) <= r:
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c]
+                return
+            elif (disc_id % 200) == 3 and abs(dy) <= r//5:
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+                return
+            elif (disc_id % 200) == 4 and abs(dx) <= r//5:
+                for c in range(nc):
+                    generation[idy, idx, c] = colors[disc_id, c] * alpha + colors[disc_id, (c+1) % 3] * (1-alpha)
+                return
     for c in range(nc):
         generation[idy, idx, c] = background[c]
 
