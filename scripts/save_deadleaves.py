@@ -19,7 +19,7 @@ from tqdm import tqdm
 import argparse
 from rstor.synthetic_data.dead_leaves_gpu import gpu_dead_leaves_chart
 from rstor.utils import DEFAULT_TORCH_FLOAT_TYPE
-from rstor.properties import DATASET_PATH, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, SAMPLER_NATURAL, SAMPLER_UNIFORM, DATASET_DL_DIV2K_512
+from rstor.properties import DATASET_PATH, DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, SAMPLER_NATURAL, SAMPLER_UNIFORM, DATASET_DL_DIV2K_512, DATASET_DL_EXTRAPRIMITIVES_DIV2K_512
 
 
 class DeadLeavesDatasetGPU(Dataset):
@@ -114,7 +114,8 @@ if __name__ == "__main__":
     argparser.add_argument("-o", "--output-dir", type=str, default=str(DATASET_PATH))
     argparser.add_argument(
         "-n", "--name", type=str,
-        choices=[DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024, DATASET_DL_DIV2K_512],
+        choices=[DATASET_DL_RANDOMRGB_1024, DATASET_DL_DIV2K_1024,
+                 DATASET_DL_DIV2K_512, DATASET_DL_EXTRAPRIMITIVES_DIV2K_512],
         default=DATASET_DL_RANDOMRGB_1024
     )
     argparser.add_argument("-b", "--benchmark", action="store_true")
@@ -146,7 +147,19 @@ if __name__ == "__main__":
         )
     elif name == DATASET_DL_DIV2K_512:
         config = default_config
+        config["size"] = (512, 512)
+        config["rmin"] = 3
+        config["length"] = 4000
         config["sampler"] = SAMPLER_NATURAL
+        config["natural_image_list"] = sorted(
+            list((DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR").glob("*.png"))
+        )
+    elif name == DATASET_DL_EXTRAPRIMITIVES_DIV2K_512:
+        config = default_config
+        config["size"] = (512, 512)
+        config["sampler"] = SAMPLER_NATURAL
+        config["circle_primitives"] = False
+        config["length"] = 4000
         config["natural_image_list"] = sorted(
             list((DATASET_PATH / "div2k" / "DIV2K_train_HR" / "DIV2K_train_HR").glob("*.png"))
         )
