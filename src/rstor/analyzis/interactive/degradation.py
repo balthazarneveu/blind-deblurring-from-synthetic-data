@@ -1,6 +1,8 @@
 import numpy as np
 from interactive_pipe import interactive
 from skimage.filters import gaussian
+from rstor.properties import DATASET_BLUR_KERNEL_PATH
+from scipy.io import loadmat
 import cv2
 
 
@@ -36,24 +38,30 @@ def degrade_noise(img: np.ndarray, noise_stddev=0., global_params={}):
     np.random.seed(seed)
     if noise_stddev > 0.:
         noise = np.random.normal(0, noise_stddev/255., img.shape)
-        img += noise
+        img = img.copy()+noise
     return img
 
 
 @interactive(
     ksize=(3, [1, 10])
 )
-def get_blur_kernel(ksize=3):
+def get_blur_kernel_box(ksize=3):
     return np.ones((ksize, ksize), dtype=np.float32) / (1.*ksize**2)
 
-# @interactive(blur_kernel_index)
+
+@interactive(
+    blur_index=(0, [0, 1000])
+)
+def get_blur_kernel(blur_index: int = 0, global_params={}):
+    blur_mat = global_params.get("blur_mat", False)
+    if blur_mat is False:
+        blur_mat = loadmat(DATASET_BLUR_KERNEL_PATH)["kernels"].squeeze()
+        global_params["blur_mat"] = blur_mat
+    blur_k = blur_mat[blur_index]
+    blur_k = blur_k/blur_k.sum()
+    return blur_k
 
 
 def degrade_blur(img: np.ndarray, blur_kernel: np.ndarray, global_params={}):
-    img = cv2.filter2D(img, -1, blur_kernel, img)
-    return img
-    # k_size = global_params.get("k_size", 1)
-    # if k_size == 0:
-    #     return img
-    # blurred = cv2.GaussianBlur(img, (2*k_size+1, 2*k_size+1), 0)
-    # return blurred
+    img_blur = cv2.filter2D(img, -1, blur_kernel)
+    return img_blur

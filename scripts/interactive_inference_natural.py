@@ -1,6 +1,6 @@
 import sys
 from interactive_pipe import interactive_pipeline
-from rstor.analyzis.interactive.pipelines import natural_inference_pipeline
+from rstor.analyzis.interactive.pipelines import natural_inference_pipeline, morph_canvas, CANVAS
 from rstor.analyzis.interactive.model_selection import get_default_models
 from pathlib import Path
 from rstor.analyzis.parser import get_parser
@@ -11,6 +11,12 @@ from rstor.analyzis.interactive.images import image_selector
 from rstor.analyzis.interactive.crop import plug_crop_selector
 from rstor.analyzis.interactive.metrics import plug_configure_metrics
 from interactive_pipe import interactive, KeyboardControl
+
+
+def plug_morph_canvas():
+    interactive(
+        canvas=KeyboardControl(CANVAS[0], CANVAS, name="canvas", keyup="p", modulo=True)
+    )(morph_canvas)
 
 
 def image_loading_batch(input: Path, args: argparse.Namespace) -> dict:
@@ -42,6 +48,7 @@ def main(argv):
     interactive(image_index=image_control)(image_selector)
     plug_crop_selector(num_pad=args.keyboard)
     plug_configure_metrics(key_shortcut="a")  # "a" if args.keyboard else None)
+    plug_morph_canvas()
     model_dict = get_default_models(args.experiments, Path(args.models_storage), keyboard_control=args.keyboard)
     interactive_pipeline(
         gui="auto",
