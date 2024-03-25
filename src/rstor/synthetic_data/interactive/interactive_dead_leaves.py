@@ -18,6 +18,8 @@ def dead_leave_plugin(ds=1):
         numba_flag=(True,),  # Default CPU to avoid issues by default
         sampler=(SAMPLER_UNIFORM, [SAMPLER_UNIFORM, SAMPLER_DIV2K, SAMPLER_SATURATED]),
         circle_primitives=(True,),
+        anisotropy=(1., [0.1, 10.]),
+        angle=(0., [-180., 180.])
         # ds=(ds, [1, 5])
     )(generate_deadleave)
 
@@ -32,6 +34,8 @@ def generate_deadleave(
     numba_flag=True,
     sampler=SAMPLER_UNIFORM,
     circle_primitives=True,
+    anisotropy=1.,
+    angle=0.,
     global_params={}
 ) -> np.ndarray:
     global_params["ds_factor"] = ds
@@ -54,7 +58,9 @@ def generate_deadleave(
                                       seed=None if seed < 0 else seed,
                                       sampler=sampler,
                                       natural_image_list=natural_image_list,
-                                      circle_primitives=circle_primitives).copy_to_host()
+                                      circle_primitives=circle_primitives,
+                                      anisotropy=anisotropy,
+                                      angle=angle).copy_to_host()
     if chart.shape[-1] == 1:
         chart = chart.repeat(3, axis=-1)
         # Required to switch from colors to gray scale visualization.
