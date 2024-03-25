@@ -395,6 +395,16 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 5005:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="UNet")
+        config[PRETTY_NAME] = "UNet deblur - DL_512 256x256"
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 0.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
     elif exp == 6000:  # -> FAILED, no kernels normalization!
         config = presets_experiments(exp, b=32, n=50)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
