@@ -385,15 +385,15 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[DATALOADER][SIZE] = (256, 256)
-    elif exp == 6000:  # -> FAILED, no kernels normalization!
-        config = presets_experiments(exp, b=32, n=50)
-        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.],
-            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
-            augmentation_list=[AUGMENTATION_FLIP]
-        )
-        config[PRETTY_NAME] = "Vanilla deblur DL_DIV2K_512"
+    # elif exp == 6000:  # -> FAILED, no kernels normalization!
+    #     config = presets_experiments(exp, b=32, n=50)
+    #     config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+    #     config[DATALOADER][CONFIG_DEGRADATION] = dict(
+    #         noise_stddev=[0., 50.],
+    #         degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+    #         augmentation_list=[AUGMENTATION_FLIP]
+    #     )
+    #     config[PRETTY_NAME] = "Vanilla deblur DL_DIV2K_512"
     elif exp == 6002:
         config = presets_experiments(exp, b=128, n=50)
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
@@ -403,15 +403,15 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[PRETTY_NAME] = "Vanilla deblur DL_DIV2K_512"
-    elif exp == 6001:  # -> FAILED, no kernels normalization!
-        config = presets_experiments(exp, b=32, n=50)
-        config[DATALOADER][NAME] = DATASET_DIV2K
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.],
-            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
-            augmentation_list=[AUGMENTATION_FLIP]
-        )
-        config[PRETTY_NAME] = "Vanilla delbur DIV2K_512"
+    # elif exp == 6001:  # -> FAILED, no kernels normalization!
+    #     config = presets_experiments(exp, b=32, n=50)
+    #     config[DATALOADER][NAME] = DATASET_DIV2K
+    #     config[DATALOADER][CONFIG_DEGRADATION] = dict(
+    #         noise_stddev=[0., 50.],
+    #         degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+    #         augmentation_list=[AUGMENTATION_FLIP]
+    #     )
+    #     config[PRETTY_NAME] = "Vanilla delbur DIV2K_512"
     elif exp == 6003:
         config = presets_experiments(exp, b=128, n=50)
         config[DATALOADER][NAME] = DATASET_DIV2K
@@ -421,6 +421,39 @@ def get_experiment_config(exp: int) -> dict:
             augmentation_list=[AUGMENTATION_FLIP]
         )
         config[PRETTY_NAME] = "Vanilla delbur DIV2K_512"
+
+    elif exp == 7000:
+        config = presets_experiments(exp, b=16, n=30, model_preset="NAFNet")
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[PRETTY_NAME] = "NafNet Light deblur DL"
+        config[DATALOADER][SIZE] = (256, 256)
+    elif exp == 7001:
+        config = presets_experiments(exp, b=16, n=50, model_preset="NAFNet")
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.],
+            degradation_blur=DEGRADATION_BLUR_MAT,  # Deblur = Using .mat kernels
+            augmentation_list=[AUGMENTATION_FLIP]
+        )
+        config[PRETTY_NAME] = "NafNet Light deblur DIV2K"
+        config[DATALOADER][SIZE] = (256, 256)
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
