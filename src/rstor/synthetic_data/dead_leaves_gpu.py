@@ -19,7 +19,9 @@ def gpu_dead_leaves_chart(
         reverse=True,
         sampler=SAMPLER_UNIFORM,
         natural_image_list=None,
-        circle_primitives: bool = True
+        circle_primitives: bool = True,
+        anisotropy: float = 1.,
+        angle: float = 0.
 ) -> np.ndarray:
     center_x, center_y, radius, color = define_dead_leaves_chart(
         size,
@@ -41,13 +43,15 @@ def gpu_dead_leaves_chart(
         colors=color,
         background=background_color,
         reverse=reverse,
-        circle_primitives=circle_primitives
+        circle_primitives=circle_primitives,
+        anisotropy=anisotropy,
+        angle=angle
     )
 
     return chart
 
 
-def _generate_dead_leaves(size, centers, radia, colors, background, reverse, circle_primitives: bool):
+def _generate_dead_leaves(size, centers, radia, colors, background, reverse, circle_primitives: bool, anisotropy: float = 1., angle: float=0.):
     assert centers.ndim == 2
     ny, nx = size
     nc = colors.shape[-1]
@@ -72,7 +76,9 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse, cir
             radia_,
             colors_,
             background,
-            circle_primitives
+            circle_primitives,
+            anisotropy,
+            np.deg2rad(angle)
         )
     else:
         cuda_dead_leaves_gen[blockspergrid, threadsperblock](
@@ -86,7 +92,7 @@ def _generate_dead_leaves(size, centers, radia, colors, background, reverse, cir
 
 
 @cuda.jit(cache=False)
-def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background, circle_primitives: bool):
+def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background, circle_primitives: bool, anisotropy: float, angle: float):
     idx, idy = cuda.grid(2)
     ny, nx, nc = generation.shape
 
@@ -97,8 +103,11 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
         return
 
     for disc_id in range(n_discs):
-        dx = idx - centers[disc_id, 0]
-        dy = idy - centers[disc_id, 1]
+        dx_ = idx - centers[disc_id, 0]
+        dy_ = idy - centers[disc_id, 1]
+        dx = math.cos(angle)*dx_ + math.sin(angle)*dy_
+        dy = -math.sin(angle)*dx_ + math.cos(angle)*dy_
+        dx = dx * anisotropy
         dist_sq = dx*dx + dy*dy
 
         # Naive thread diverging version
@@ -111,7 +120,6 @@ def cuda_dead_leaves_gen_reversed(generation, centers, radia, colors, background
                     generation[idy, idx, c] = colors[disc_id, c]
                 return
         else:
-
             if (disc_id % 4) == 0 and dist_sq <= r_sq:
                 # Copy back to global memory
                 alpha = dist_sq/r_sq
