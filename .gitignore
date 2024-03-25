@@ -215,3 +215,4 @@ build/**/*
 include/*
 lib/*
 bin/*
+scripts/__kaggle_login.py
