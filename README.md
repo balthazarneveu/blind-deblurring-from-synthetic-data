@@ -95,6 +95,14 @@ python scripts/infer.py -e 5000 -o __inference/deblur -t metrics --size "512,512
 Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
 
 
+### Synthetic data generation
+Genenrate deadleaves:  `python scripts/save_deadleaves.py -n  deadleaves_primitives_div2k_512`
 
-##### Download image test datasets hosted on Kaggle 
+##### Download image test datasets hosted on Kaggle
+
+
+- [Presaved deadleave dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-div2k-512)
+- [Presaved deadleaves + extra primitives dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-primitives-div2k-512)  
+- [Motion blur](https://www.kaggle.com/datasets/balthazarneveu/motion-blur-kernels)
+
 [Kodak](https://www.kaggle.com/datasets/sherylmehta/kodak-dataset/data) | [Gopro](https://www.kaggle.com/datasets/rahulbhalley/gopro-deblur)
