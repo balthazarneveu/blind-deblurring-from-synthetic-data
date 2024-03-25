@@ -50,9 +50,11 @@ def get_blur_kernel_box(ksize=3):
 
 
 @interactive(
-    blur_index=(0, [0, 1000])
+    blur_index=(-1, [-1, 1000])
 )
-def get_blur_kernel(blur_index: int = 0, global_params={}):
+def get_blur_kernel(blur_index: int = -1, global_params={}):
+    if blur_index == -1:
+        return None
     blur_mat = global_params.get("blur_mat", False)
     if blur_mat is False:
         blur_mat = loadmat(DATASET_BLUR_KERNEL_PATH)["kernels"].squeeze()
@@ -63,5 +65,7 @@ def get_blur_kernel(blur_index: int = 0, global_params={}):
 
 
 def degrade_blur(img: np.ndarray, blur_kernel: np.ndarray, global_params={}):
+    if blur_kernel is None:
+        return img
     img_blur = cv2.filter2D(img, -1, blur_kernel)
     return img_blur

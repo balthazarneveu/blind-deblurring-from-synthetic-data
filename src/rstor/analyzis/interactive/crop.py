@@ -69,5 +69,7 @@ def crop(*images, global_params={}):
 
 
 def rescale_thumbnail(image, global_params={}):
+    if image is None:  # support no blur kernel!
+        return None
     resize_dim = max(global_params.get("resize", (512, 512)))
     return cv2.resize(image, (resize_dim, resize_dim), interpolation=cv2.INTER_NEAREST)
