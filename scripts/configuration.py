@@ -4,8 +4,12 @@ NB_ID = "blind-deblurring-from-synthetic-data"  # This will be the name which ap
 GIT_USER = "balthazarneveu"  # Your git user name
 GIT_REPO = "blind-deblurring-from-synthetic-data"  # Your current git repo
 # Keep free unless you need to acess kaggle datasets. You'll need to modify the remote_training_template.ipynb.
-KAGGLE_DATASET_LIST = ["balthazarneveu/deadleaves-div2k-512",
-                       "joe1995/div2k-dataset", "balthazarneveu/motion-blur-kernels"]
+KAGGLE_DATASET_LIST = [
+    "balthazarneveu/deadleaves-div2k-512", # Deadleaves classic
+    "balthazarneveu/deadleaves-primitives-div2k-512", # Deadleaves with extra primitives
+    "balthazarneveu/motion-blur-kernels", # Motion blur kernels
+    "joe1995/div2k-dataset",
+]
 WANDBSPACE = "deblur-from-deadleaves"
 TRAIN_SCRIPT = "scripts/train.py"  # Location of the training script
 
