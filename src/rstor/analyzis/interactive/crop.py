@@ -66,3 +66,8 @@ def crop(*images, global_params={}):
         image_resized = cv2.resize(crop, (w_resize, h_resize), interpolation=cv2.INTER_NEAREST)
         images_resized.append(image_resized)
     return tuple(images_resized)
+
+
+def rescale_thumbnail(image, global_params={}):
+    resize_dim = max(global_params.get("resize", (512, 512)))
+    return cv2.resize(image, (resize_dim, resize_dim), interpolation=cv2.INTER_NEAREST)
