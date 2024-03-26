@@ -282,7 +282,7 @@ def get_experiment_config(exp: int) -> dict:
         config[DATALOADER][CONFIG_DEGRADATION] = dict(
             noise_stddev=[0., 50.]
         )
-        config[PRETTY_NAME] = "Vanilla DL_DIV2K_512 0-50 - noisy 0-50"
+        config[PRETTY_NAME] = "Vanilla denoise DL  0-50 - noisy 0-50"
     # ---------------------------------
     # Pure DIV2K DENOISING trainings!
     # ---------------------------------

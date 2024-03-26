@@ -10,7 +10,8 @@ from rstor.properties import (
     CONFIG_DEGRADATION,
     DATASET_DIV2K,
     DATASET_DL_DIV2K_512,
-    METRIC_PSNR, METRIC_SSIM,
+    DATASET_DL_EXTRAPRIMITIVES_DIV2K_512,
+    METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS,
     DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_NONE
 )
 from rstor.data.dataloader import get_data_loader
@@ -56,7 +57,8 @@ def get_parser(parser: Optional[argparse.ArgumentParser] = None, batch_mode=Fals
     parser.add_argument("-n", "--number-of-images", type=int, default=None,
                         required=False, help="Number of images to process")
     parser.add_argument("-d", "--dataset", type=str,
-                        choices=[None,  DATASET_DL_DIV2K_512, DATASET_DIV2K], default=None),
+                        choices=[None,  DATASET_DL_DIV2K_512, DATASET_DIV2K, DATASET_DL_EXTRAPRIMITIVES_DIV2K_512],
+                        default=None),
     parser.add_argument("-b", "--blur", action="store_true")
     return parser
 
@@ -66,7 +68,7 @@ def to_image(img: torch.Tensor):
 
 
 def infer(model, dataloader, config, device, output_dir: Path, traces: List[str] = ALL_TRACES, number_of_images=None, degradation_key=CONFIG_DEAD_LEAVES,
-          chosen_metrics=[METRIC_PSNR, METRIC_SSIM]):
+          chosen_metrics=[METRIC_PSNR, METRIC_SSIM]):  # add METRIC_LPIPS here!
     img_index = 0
     if TRACES_ALL in traces:
         traces = ALL_TRACES
