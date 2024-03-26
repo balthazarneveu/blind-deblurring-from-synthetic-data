@@ -1,3 +1,4 @@
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
@@ -12,8 +13,9 @@ def sigma_to_snr(sigma):
     return -20.*np.log10(sigma/255.)
 
 
-def plot_results(selected_paths, title=None, diff=True):
+def plot_results(selected_paths, title=None, diff=True, ylim=None):
     # plt.figure(figsize=(10, 10))
+    all_stats = {}
     fig, ax = plt.subplots(layout='constrained', figsize=(10, 10))
     for selected_path, selected_regex in selected_paths:
         selected_path = Path(selected_path)
@@ -24,12 +26,20 @@ def plot_results(selected_paths, title=None, diff=True):
             df = pd.read_csv(result_path)
             in_psnr = df["in_PSNR"].mean()
             out_psnr = df["out_PSNR"].mean()
+            out_ssim = df["out_SSIM"].mean()
+            noise_stddev = np.array([
+                float(el.replace("}", "").split(":")[1]) for el in df["degradation"]]).mean()
             stats.append({
+                # "label": label,
                 "in_psnr": in_psnr,
                 "out_psnr": out_psnr,
+                "noise_stddev": noise_stddev,
+                "ssim": out_ssim
             })
             label = selected_path.name + " " + df["size"][0]
+        
         stats_array = pd.DataFrame(stats)
+        all_stats[label] = stats_array
         x_data = stats_array["in_psnr"].copy()
         x_data = snr_to_sigma(x_data)
 
@@ -51,8 +61,13 @@ def plot_results(selected_paths, title=None, diff=True):
     plt.xlim(1., 50.)
     if diff:
         plt.ylim(0, 15)
+    else:
+        if ylim is not None:
+            plt.ylim(*ylim)
     if title is not None:
         plt.title(title)
     plt.legend()
     plt.grid()
     plt.show()
+
+    return all_stats
