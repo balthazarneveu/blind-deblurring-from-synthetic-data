@@ -30,6 +30,7 @@ class RestorationDataset(Dataset):
         blur_kernel_half_size: int = [0, 2],
         noise_stddev: float = [0., 50.],
         degradation_blur=DEGRADATION_BLUR_NONE,
+        blur_index=None,
         **_extra_kwargs
     ):
         self.preloaded = preloaded
@@ -76,7 +77,8 @@ class RestorationDataset(Dataset):
             self.blur_deg_str = "blur_kernel_half_size"
         elif degradation_blur == DEGRADATION_BLUR_MAT:
             self.degradation_blur = DegradationBlurMat(self.length,
-                                                       frozen_seed)
+                                                       frozen_seed,
+                                                       blur_index)
             self.blur_deg_str = "blur_kernel_id"
         elif degradation_blur == DEGRADATION_BLUR_NONE:
             pass
@@ -121,9 +123,13 @@ class RestorationDataset(Dataset):
 
         degraded_img = degraded_img.squeeze(0)
         self.current_degradation[index] = {
-            # blur_deg_str: self.degradation_blur.current_degradation[idx][blur_deg_str],
             "noise_stddev": self.degradation_noise.current_degradation[index]["noise_stddev"]
         }
+        try:
+            self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[index][self.blur_deg_str]
+        except KeyError:
+            pass
+
         return degraded_img, img_data
 
     def __len__(self):

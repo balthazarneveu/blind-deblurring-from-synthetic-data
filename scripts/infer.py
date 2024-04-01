@@ -60,6 +60,7 @@ def get_parser(parser: Optional[argparse.ArgumentParser] = None, batch_mode=Fals
                         choices=[None,  DATASET_DL_DIV2K_512, DATASET_DIV2K, DATASET_DL_EXTRAPRIMITIVES_DIV2K_512],
                         default=None),
     parser.add_argument("-b", "--blur", action="store_true")
+    parser.add_argument("--blur-index", type=int, nargs="+", default=None)
     return parser
 
 
@@ -95,7 +96,11 @@ def infer(model, dataloader, config, device, output_dir: Path, traces: List[str]
                 degradation_parameters = dataloader.dataset.current_degradation[img_index]
                 common_prefix = f"{img_index:05d}_{img_degraded.shape[-3]:04d}x{img_degraded.shape[-2]:04d}"
                 common_prefix += f"_noise=[{config[DATALOADER][degradation_key]['noise_stddev'][0]:02d},{config[DATALOADER][degradation_key]['noise_stddev'][1]:02d}]"
-                suffix_deg = f"_noise={round(degradation_parameters['noise_stddev']):02d}"
+                suffix_deg = ""
+                if degradation_parameters['noise_stddev'] > 0:
+                    suffix_deg += f"_noise={round(degradation_parameters['noise_stddev']):02d}"
+                suffix_deg += f"_blur={degradation_parameters['blur_kernel_id']:04d}"
+                #if degradation_parameters.get("blur_kernel_id", False) else ""
                 save_path_pred = output_dir/f"{common_prefix}_pred{suffix_deg}_{config[PRETTY_NAME]}.png"
                 save_path_degr = output_dir/f"{common_prefix}_degr{suffix_deg}.png"
                 save_path_targ = output_dir/f"{common_prefix}_targ.png"
@@ -153,7 +158,7 @@ def infer_main(argv, batch_mode=False):
         current_model_dict = model_dict[list(model_dict.keys())[0]]
         model = current_model_dict["model"]
         config = current_model_dict["config"]
-        for std_dev, size in product(args.std_dev, args.size):
+        for std_dev, size, blur_index in product(args.std_dev, args.size, args.blur_index):
             if dataset is None:
                 config[DATALOADER][CONFIG_DEAD_LEAVES] = dict(
                     blur_kernel_half_size=[0, 0],
@@ -167,7 +172,8 @@ def infer_main(argv, batch_mode=False):
             else:
                 config[DATALOADER][CONFIG_DEGRADATION] = dict(
                     noise_stddev=list(std_dev),
-                    degradation_blur=DEGRADATION_BLUR_MAT if blur_flag else DEGRADATION_BLUR_NONE
+                    degradation_blur=DEGRADATION_BLUR_MAT if blur_flag else DEGRADATION_BLUR_NONE,
+                    blur_index=blur_index
                 )
                 config[DATALOADER][NAME] = dataset
                 config[DATALOADER][SIZE] = size
@@ -184,8 +190,12 @@ def infer_main(argv, batch_mode=False):
             if all_metrics is not None:
                 # print(all_metrics)
                 df = pd.DataFrame(all_metrics).T
-                prefix = f"{size[0]:04d}x{size[1]:04d}_noise=[{std_dev[0]:02d},{std_dev[1]:02d}]" + \
-                    f"_{config[PRETTY_NAME]}"
+                prefix = f"{size[0]:04d}x{size[1]:04d}"
+                if not (std_dev[0] == 0 and std_dev[1] == 0):
+                    prefix += f"_noise=[{std_dev[0]:02d},{std_dev[1]:02d}]"
+                if blur_index is not None:
+                    prefix += f"_blur={blur_index:02d}"
+                prefix += f"_{config[PRETTY_NAME]}"
                 df.to_csv(output_dir/f"__{prefix}_metrics_.csv", index=False)
                 # Normally this could go into another script to handle the metrics analyzis
                 # print(df)
