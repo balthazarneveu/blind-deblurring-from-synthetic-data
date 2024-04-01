@@ -55,7 +55,8 @@ class DegradationNoise(Degradation):
 class DegradationBlurMat(Degradation):
     def __init__(self,
                  length: int = 1000,
-                 frozen_seed: int = None):
+                 frozen_seed: int = None,
+                 blur_index: int = None):
         super().__init__(length, frozen_seed)
 
         kernels = loadmat(DATASET_BLUR_KERNEL_PATH)["kernels"].squeeze()
@@ -68,6 +69,9 @@ class DegradationBlurMat(Degradation):
         if frozen_seed is not None:
             random.seed(frozen_seed)
             self.kernel_ids = [random.randint(0, self.n_kernels-1) for _ in range(length)]
+        if blur_index is not None:
+            self.frozen_seed = 42
+            self.kernel_ids = [blur_index for _ in range(length)]
 
     def __call__(self, x: torch.Tensor, idx: int):
         # expects x of shape [b, c, h, w]
