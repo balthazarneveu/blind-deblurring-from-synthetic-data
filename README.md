@@ -12,13 +12,28 @@ restoration neural networks](https://hal.science/hal-03186499/file/papier_SSVM%2
 
 We propose to explore several tracks:
 - Use a [NAFNET](https://github.com/megvii-research/NAFNet) architecture
+- Extend deadleaves with extra primitives (lines, diamond shapes, colored gradients)
 - Try to see if the generalization property to natural images observed in denoising holds for deblurring. 
 
 
 
 ![](illustrations/blind_deblur_teaser_figure.png)
-------
 
+
+We first validated that NAFNet trained on deadleaves performed well on the blind denoising task. Below you can see that it also performs correctly on natural images, although the performances are not as good as a network purely trained on natural images.
+
+| Qualitative results at SNR in = 20dB | Quantitative results
+| :---: | :---: |
+| ![](illustrations/deadleaves_vs_natural_with_psnr.png) | ![](illustrations/cross_val_natural.png)
+
+
+Finally, when applying the deadleaves training to the blind deblurring problem, one of the advantage we have notticed is that the network always tries to deblur even when the level of blur is high. On the contrary, when trained on natural images, the NAFNEt does not work so well when the blur level is too big.
+
+**Conclusion** : 
+- Using extra primitives to pure deadleaves seems like a good idea but did not bring as much as we'd expected. A rework by adding anisotropy and extra geometric shapes could lead to significantly better results.
+- Training on deadleaves images brings a lot of stability in trainings (as the image distribution is basically always the same, providing a fair amount of learning signal) and can be seen as a good pretext task before to the real dataset. 
+
+------
 ## Setup
 
 ```bash
