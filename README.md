@@ -28,10 +28,17 @@ We first validated that NAFNet trained on deadleaves performed well on the blind
 
 
 Finally, when applying the deadleaves training to the blind deblurring problem, one of the advantage we have notticed is that the network always tries to deblur even when the level of blur is high. On the contrary, when trained on natural images, the NAFNEt does not work so well when the blur level is too big.
+|Blind deblurring results|
+|:----:|
+| ![](illustrations/deblur_results.png) |
+|Deblurring result for different amount of blur, using Nafnet trained on Div2K or deadleaves. From left to right column: ”small”, ”mild” and ”big” blur kernels to degrade the input. **Top row**: input image. **Middle row**: output of NafNet trained on deadleaves.  **Bottom row**: output of NafNet trained on Div2K.|
+|![](illustrations/deblur_table.png) |
 
 **Conclusion** : 
 - Using extra primitives to pure deadleaves seems like a good idea but did not bring as much as we'd expected. A rework by adding anisotropy and extra geometric shapes could lead to significantly better results.
-- Training on deadleaves images brings a lot of stability in trainings (as the image distribution is basically always the same, providing a fair amount of learning signal) and can be seen as a good pretext task before to the real dataset. 
+- Training on deadleaves images brings a lot of stability in trainings (as the image distribution is basically always the same, providing a fair amount of learning signal) and can be seen as a good pretext task before to the real dataset.
+
+
 
 ------
 ## Setup
