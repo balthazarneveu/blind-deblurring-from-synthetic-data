@@ -6,11 +6,17 @@ MVA project 2024 on [image restoration](https://delires.wp.imt.fr/)
 
 ------
 
-[Synthetic images as a regularity prior for image
+In the paper [Synthetic images as a regularity prior for image
 restoration neural networks](https://hal.science/hal-03186499/file/papier_SSVM%20%281%29.pdf) by 
-Raphaël Achddou, Yann Gousseau, Saïd Ladjal
+*Raphaël Achddou, Yann Gousseau, Saïd Ladjal*, it was shown that a deep neural network can be trained for denoising solely from synthetic dead leave images and does perform relatively well on natural images. 
+
+We propose to explore several tracks:
+- Use a [NAFNET](https://github.com/megvii-research/NAFNet) architecture
+- Try to see if the generalization property to natural images observed in denoising holds for deblurring. 
 
 
+
+![](illustrations/blind_deblur_teaser_figure.png)
 ------
 
 ## Setup
@@ -24,20 +30,36 @@ pip install batch-processing
 ```
 
 
-### Supported tasks
-- Additive White Gaussian Noise denoising
-- Basic anisotropic Gaussian deblur
-- Deblur+Denoise
 
-:warning: Not supported yet - motion deblur / blind motion deblur
 
-### Supported network architectures
-- Stacked convolutions baseline
-- NAFNet 
 
 -------
 
 ## Training
+
+![](illustrations/supervised_learning%20_framework_wide.png)
+
+##### Supported tasks
+- Additive White Gaussian Noise denoising
+- Basic anisotropic Gaussian deblur
+- Blind motion deblur
+
+##### Supported network architectures
+- Stacked convolutions baseline
+- NAFNet 
+
+##### Supported dataset
+- Images read from disk
+- Endless Live generation of deadleaves using a cuda based numba kernel.
+
+
+##### Synthetic data generation
+
+Generate deadleaves:  `python scripts/save_deadleaves.py -n  deadleaves_primitives_div2k_512`
+
+
+
+
 
 #### Local training
 - Quick debugging / Local `python scripts/train.py -e -1 -nowb`
@@ -46,6 +68,14 @@ pip install batch-processing
 python scripts/train.py -e 1000
 ```
 
+##### Download image test datasets hosted on Kaggle
+
+
+- [Presaved deadleave dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-div2k-512)
+- [Presaved deadleaves + extra primitives dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-primitives-div2k-512)  
+- [Motion blur](https://www.kaggle.com/datasets/balthazarneveu/motion-blur-kernels)
+
+[Kodak](https://www.kaggle.com/datasets/sherylmehta/kodak-dataset/data) | [Gopro](https://www.kaggle.com/datasets/rahulbhalley/gopro-deblur)
 
 #### Remote training
 :key: After setting up your kaggle credentials (`scripts/__kaggle_login.py` as explained [here](https://github.com/balthazarneveu/mva_pepites?tab=readme-ov-file#remote-training))
@@ -53,8 +83,12 @@ python scripts/train.py -e 1000
 ```bash
 python scripts/remote_training.py -e 1000 -u username -p
 ```
+For remote training, datasets will be automatically available under Kaggle.
+
 #### Monitoring and tracking
 Available on [Weights and Biases](https://wandb.ai/balthazarneveu/deblur-from-deadleaves)
+
+
 
 
 #### [Metrics](src/rstor/learning/metrics.py)
@@ -86,23 +120,15 @@ python scripts/infer.py -e 1004 2000 -o __inference -t metrics --size "512,512 2
 ```
 
 
+Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/quantitative_results.ipynb).
+
+
 Infer with deblur
 ```bash
 python scripts/infer.py -e 5000 -o __inference/deblur -t metrics --size "512,512" --std-dev "0,0" -n 2 --traces all --dataset div2k -b
 ```
 
-
-Please refer to check how to aggregate results afterwards [metrics_analyzis.ipynb](scripts/metrics_analyzis.ipynb).
-
-
-### Synthetic data generation
-Genenrate deadleaves:  `python scripts/save_deadleaves.py -n  deadleaves_primitives_div2k_512`
-
-##### Download image test datasets hosted on Kaggle
+It is even possible to freeze blur kernel indices `--blur-index 8 12 17` in order to get the metric with a fixed amount of blur.
 
 
-- [Presaved deadleave dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-div2k-512)
-- [Presaved deadleaves + extra primitives dataset](https://www.kaggle.com/datasets/balthazarneveu/deadleaves-primitives-div2k-512)  
-- [Motion blur](https://www.kaggle.com/datasets/balthazarneveu/motion-blur-kernels)
 
-[Kodak](https://www.kaggle.com/datasets/sherylmehta/kodak-dataset/data) | [Gopro](https://www.kaggle.com/datasets/rahulbhalley/gopro-deblur)
