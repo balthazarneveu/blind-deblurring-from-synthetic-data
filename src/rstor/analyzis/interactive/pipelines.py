@@ -5,7 +5,6 @@ from rstor.analyzis.interactive.degradation import degrade_noise, degrade_blur, 
 from rstor.analyzis.interactive.model_selection import model_selector
 from rstor.analyzis.interactive.images import image_selector
 from rstor.analyzis.interactive.metrics import get_metrics, configure_metrics
-from interactive_pipe import interactive, KeyboardControl
 from typing import Tuple, List
 from functools import partial
 import numpy as np

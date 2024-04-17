@@ -1,10 +1,13 @@
 import torch
 from pathlib import Path
+import logging
 RELU = "ReLU"
 LEAKY_RELU = "LeakyReLU"
 SIMPLE_GATE = "simple_gate"
 LOSS = "loss"
 LOSS_MSE = "MSE"
+LOSS_VGG16 = "VGG16"
+METRIC_PERCEPTUAL = LOSS_VGG16
 METRIC_PSNR = "PSNR"
 METRIC_SSIM = "SSIM"
 METRIC_LPIPS = "LPIPS"
@@ -26,6 +29,8 @@ OPTIMIZER = "optimizer"
 LR = "lr"
 PARAMS = "parameters"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+if DEVICE != "cuda":
+    logging.warning("CUDA not available, using CPU!!!")
 SCHEDULER_CONFIGURATION = "scheduler_configuration"
 SCHEDULER = "scheduler"
 REDUCELRONPLATEAU = "ReduceLROnPlateau"

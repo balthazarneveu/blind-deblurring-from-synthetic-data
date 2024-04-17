@@ -1,6 +1,9 @@
 import torch
 from typing import Optional
-from rstor.properties import LOSS_MSE
+from rstor.properties import LOSS_MSE, LOSS_VGG16
+from rstor.learning.perceptual import perceptual_loss
+
+vgg_loss_instance = None
 
 
 def compute_loss(
@@ -22,4 +25,6 @@ def compute_loss(
     assert mode in [LOSS_MSE], f"Mode {mode} not supported"
     if mode == LOSS_MSE:
         loss = torch.nn.functional.mse_loss(predic, target)
+    elif mode == LOSS_VGG16:
+        loss = perceptual_loss(predic, target, device=predic.device, no_grad=False)
     return loss

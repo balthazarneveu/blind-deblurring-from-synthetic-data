@@ -1,7 +1,7 @@
 from rstor.learning.metrics import compute_metrics, ALL_METRICS
 import torch
 import numpy as np
-from rstor.properties import METRIC_PSNR, METRIC_SSIM
+from rstor.properties import METRIC_PSNR, METRIC_SSIM, METRIC_PERCEPTUAL
 from interactive_pipe import interactive, KeyboardControl
 from typing import Optional
 
@@ -14,6 +14,7 @@ def plug_configure_metrics(key_shortcut: Optional[str] = None) -> None:
 
 def configure_metrics(advanced_metrics=False, global_params={}) -> None:
     chosen_metrics = ALL_METRICS if advanced_metrics else [METRIC_PSNR, METRIC_SSIM]
+    chosen_metrics.append(METRIC_PERCEPTUAL)
     global_params["chosen_metrics"] = chosen_metrics
 
 

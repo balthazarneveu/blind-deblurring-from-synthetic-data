@@ -1,9 +1,15 @@
 import torch
-from rstor.properties import METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, REDUCTION_AVERAGE, REDUCTION_SKIP, REDUCTION_SUM
+from rstor.properties import (
+    METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, METRIC_PERCEPTUAL,
+    REDUCTION_AVERAGE, REDUCTION_SKIP, REDUCTION_SUM
+)
 from torchmetrics.image import StructuralSimilarityIndexMeasure as SSIM
 from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
+from rstor.learning.perceptual import perceptual_loss
 from typing import List, Optional
 ALL_METRICS = [METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS]
+
+vgg_instance = None
 
 
 def compute_psnr(
@@ -137,4 +143,8 @@ def compute_metrics(
     if METRIC_LPIPS in chosen_metrics:
         lpip_value = compute_lpips(predic, target, reduction=reduction)
         metrics[METRIC_LPIPS] = lpip_value.item() if reduction != REDUCTION_SKIP else lpip_value
+    if METRIC_PERCEPTUAL in chosen_metrics:
+        with torch.no_grad():
+            perceptual_l = perceptual_loss(predic, target, no_grad=True)
+        metrics[METRIC_PERCEPTUAL] = perceptual_l.item() if reduction != REDUCTION_SKIP else perceptual_l
     return metrics
