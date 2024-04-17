@@ -22,9 +22,10 @@ def compute_loss(
     Returns:
         torch.Tensor: The computed loss.
     """
-    assert mode in [LOSS_MSE], f"Mode {mode} not supported"
+    assert mode in [LOSS_MSE, LOSS_VGG16], f"Mode {mode} not supported"
     if mode == LOSS_MSE:
         loss = torch.nn.functional.mse_loss(predic, target)
     elif mode == LOSS_VGG16:
+        target.requires_grad = False
         loss = perceptual_loss(predic, target, device=predic.device, no_grad=False)
     return loss

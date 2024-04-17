@@ -1,8 +1,10 @@
 from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               TRAIN, VALIDATION, SCHEDULER, REDUCELRONPLATEAU,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
-                              LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
-                              SELECTED_METRICS, 
+                              LOSS, LOSS_MSE,
+                              LOSS_VGG16,
+                              CONFIG_DEAD_LEAVES,
+                              SELECTED_METRICS,
                               METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, METRIC_PERCEPTUAL,
                               DATASET_DL_DIV2K_512, DATASET_DIV2K,
                               CONFIG_DEGRADATION,
@@ -46,7 +48,7 @@ def presets_experiments(
     b: int = 32,
     n: int = 50,
     bias: bool = True,
-    length: int = 5000,
+    length: int = None,
     data_size: Tuple[int, int] = (128, 128),
     model_preset: str = "StackedConvolutions",
     lpips: bool = False
@@ -62,11 +64,12 @@ def presets_experiments(
             VALIDATION: b
         },
         SIZE: data_size,  # (width, height)
-        LENGTH: {
+    }
+    if length is not None:
+        config[DATALOADER][LENGTH] = {
             TRAIN: length,
             VALIDATION: 800
         }
-    }
     config[OPTIMIZER] = {
         NAME: "Adam",
         PARAMS: {
@@ -83,6 +86,46 @@ def presets_experiments(
     config[SELECTED_METRICS] = [METRIC_PSNR, METRIC_SSIM, METRIC_PERCEPTUAL]
     if lpips:
         config[SELECTED_METRICS].append(METRIC_LPIPS)
+    return config
+
+
+def nafnet_baseline(exp: int, size: bool = "regular", loss: str = LOSS_MSE):
+    config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+    if size == "light":
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        name = "NAFNet3.4M"
+    elif size == "ultra_light":
+        config[MODEL][ARCHITECTURE] = dict(
+            # width=8, # 60k params
+            width=16,  # 226k params
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+        name = "NAFNet226k"
+    elif size == "regular":
+        name = "NAFNet41.4"
+    else:
+        raise ValueError(f"Unknown size {size}")
+    config[DATALOADER][NAME] = DATASET_DIV2K
+    config[DATALOADER][CONFIG_DEGRADATION] = dict(
+        noise_stddev=[1., 100.]
+    )
+    config[DATALOADER][SIZE] = (256, 256)
+    name += "DIV2K DN 1-100 256x256"
+    if loss == LOSS_MSE:
+        config[LOSS] = LOSS_MSE
+    elif loss == LOSS_VGG16:
+        config[LOSS] = LOSS_VGG16
+        name += " VGG"
+    else:
+        raise ValueError(f"Unknown loss {loss}")
+    config[PRETTY_NAME] = name
     return config
 
 
@@ -107,50 +150,44 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla exp from disk - noisy 0-50"
-    # ---------------------------------
-    # Pure DL DENOISING trainings
-    # ---------------------------------
-    elif exp == 100:
-        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_DIV2K_512 0-50 256x256"
-        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.]
-        )
-        config[DATALOADER][SIZE] = (256, 256)
-    elif exp == 3020:
-        config = presets_experiments(exp, b=32, n=50)
-        config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.]
-        )
-        config[PRETTY_NAME] = "Vanilla denoise DL  0-50 - noisy 0-50"
+        # config[LOSS] = LOSS_VGG16
     # ---------------------------------
     # Pure DIV2K DENOISING trainings
     # ---------------------------------
+    # ---- MSE Baselines ---
+    elif exp == 0:
+        config = nafnet_baseline(0, size="ultra_light")
     elif exp == 1:
-        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "Light NAFNet3.4M denoise - DIV2K_512 0-50 256x256"
-        config[DATALOADER][NAME] = DATASET_DIV2K
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.]
-        )
-        config[DATALOADER][SIZE] = (256, 256)
-        # # 3.4M parameters
-        config[MODEL][ARCHITECTURE] = dict(
-            width=64,
-            enc_blk_nums=[1, 1, 2],
-            middle_blk_num=1,
-            dec_blk_nums=[1, 1, 1],
-        )
+        config = nafnet_baseline(1, size="light")
     elif exp == 2:
-        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
-        config[PRETTY_NAME] = "NAFNet41.4M denoise - DIV2K_512 0-50 256x256"
-        config[DATALOADER][NAME] = DATASET_DIV2K
-        config[DATALOADER][CONFIG_DEGRADATION] = dict(
-            noise_stddev=[0., 50.]
-        )
-        config[DATALOADER][SIZE] = (256, 256)
+        config = nafnet_baseline(1, size="regular")
+    # ---- VGG Baselines ---
+    elif exp == 10:
+        config = nafnet_baseline(10, size="ultra_light", loss=LOSS_VGG16)
+    elif exp == 11:
+        config = nafnet_baseline(11, size="light", loss=LOSS_VGG16)
+    elif exp == 12:
+        config = nafnet_baseline(12, size="regular", loss=LOSS_VGG16)
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
+
+
+# ---------------------------------
+# Pure DL DENOISING trainings
+# ---------------------------------
+# elif exp == 100:
+#     config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+#     config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_DIV2K_512 0-50 256x256"
+#     config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+#     config[DATALOADER][CONFIG_DEGRADATION] = dict(
+#         noise_stddev=[0., 50.]
+#     )
+#     config[DATALOADER][SIZE] = (256, 256)
+# elif exp == 3020:
+#     config = presets_experiments(exp, b=32, n=50)
+#     config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
+#     config[DATALOADER][CONFIG_DEGRADATION] = dict(
+#         noise_stddev=[0., 50.]
+#     )
+#     config[PRETTY_NAME] = "Vanilla denoise DL  0-50 - noisy 0-50"

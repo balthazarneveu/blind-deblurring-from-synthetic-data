@@ -2,8 +2,10 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 from rstor.data.augmentation import augment_flip
 from rstor.data.degradation import DegradationBlurMat, DegradationBlurGauss, DegradationNoise
-from rstor.properties import DEVICE, AUGMENTATION_FLIP, AUGMENTATION_ROTATE, DEGRADATION_BLUR_NONE, DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS
-from rstor.properties import DATALOADER, BATCH_SIZE, TRAIN, VALIDATION, LENGTH, CONFIG_DEAD_LEAVES, SIZE
+from rstor.properties import (
+    DEVICE, AUGMENTATION_FLIP, AUGMENTATION_ROTATE, DEGRADATION_BLUR_NONE,
+    DEGRADATION_BLUR_MAT, DEGRADATION_BLUR_GAUSS
+)
 from typing import Tuple, Optional, Union
 from torchvision import transforms
 # from torchvision.transforms import RandomCrop
@@ -30,6 +32,7 @@ class RestorationDataset(Dataset):
         blur_kernel_half_size: int = [0, 2],
         noise_stddev: float = [0., 50.],
         degradation_blur=DEGRADATION_BLUR_NONE,
+        length=None,
         blur_index=None,
         **_extra_kwargs
     ):
@@ -42,9 +45,8 @@ class RestorationDataset(Dataset):
         else:
             self.path_list = images_path
 
-        self.length = len(self.path_list)
-
-        self.n_samples = len(self.path_list)
+        self.length = len(self.path_list) if length is None else length
+        self.n_samples = len(self.path_list) if length is None else length
         # If we can preload everything in memory, we can do it
         if preloaded:
             self.data_list = [load_image(pth) for pth in tqdm(self.path_list)]
@@ -119,15 +121,17 @@ class RestorationDataset(Dataset):
             self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[index][self.blur_deg_str]
 
         degraded_img = self.degradation_noise(degraded_img, index)
-        self.current_degradation[index]["noise_stddev"] = self.degradation_noise.current_degradation[index]["noise_stddev"]
+        self.current_degradation[index]["noise_stddev"] = self.degradation_noise.current_degradation[
+            index]["noise_stddev"]
 
         degraded_img = degraded_img.squeeze(0)
         self.current_degradation[index] = {
             "noise_stddev": self.degradation_noise.current_degradation[index]["noise_stddev"]
         }
         try:
-            self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[index][self.blur_deg_str]
-        except:
+            self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[
+                index][self.blur_deg_str]
+        except:  # noqa: E722
             pass
 
         return degraded_img, img_data

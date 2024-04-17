@@ -125,8 +125,6 @@ def train(config: dict, output_dir: Path, device: str = DEVICE, wandb_flag: bool
     logging.basicConfig(level=logging.INFO)
     logging.info(f"Training experiment {config[ID]} on device {device}...")
     output_dir.mkdir(parents=True, exist_ok=True)
-    with open(output_dir/"config.json", "w") as f:
-        json.dump(config, f)
     model, optimizer, dl_dict = get_training_content(config, training_mode=True, device=device)
     model.to(device)
     if wandb_flag:
@@ -139,6 +137,8 @@ def train(config: dict, output_dir: Path, device: str = DEVICE, wandb_flag: bool
             # tags=["base"],
             config=config
         )
+    with open(output_dir/"config.json", "w") as f:
+        json.dump(config, f)
     scheduler = None
     if config.get(SCHEDULER, False):
         scheduler_config = config[SCHEDULER_CONFIGURATION]
