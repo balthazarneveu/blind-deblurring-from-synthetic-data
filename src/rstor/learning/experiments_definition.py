@@ -2,7 +2,8 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               TRAIN, VALIDATION, SCHEDULER, REDUCELRONPLATEAU,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE, CONFIG_DEAD_LEAVES,
-                              SELECTED_METRICS, METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS,
+                              SELECTED_METRICS, 
+                              METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, METRIC_PERCEPTUAL,
                               DATASET_DL_DIV2K_512, DATASET_DIV2K,
                               CONFIG_DEGRADATION,
                               PRETTY_NAME,
@@ -79,7 +80,7 @@ def presets_experiments(
         "patience": 5
     }
     config[LOSS] = LOSS_MSE
-    config[SELECTED_METRICS] = [METRIC_PSNR, METRIC_SSIM]
+    config[SELECTED_METRICS] = [METRIC_PSNR, METRIC_SSIM, METRIC_PERCEPTUAL]
     if lpips:
         config[SELECTED_METRICS].append(METRIC_LPIPS)
     return config
@@ -109,7 +110,7 @@ def get_experiment_config(exp: int) -> dict:
     # ---------------------------------
     # Pure DL DENOISING trainings
     # ---------------------------------
-    elif exp == 3001:  # ENABLE GRADIENT CLIPPING
+    elif exp == 100:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet41.4M denoise - DL_DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DL_DIV2K_512
@@ -127,7 +128,22 @@ def get_experiment_config(exp: int) -> dict:
     # ---------------------------------
     # Pure DIV2K DENOISING trainings
     # ---------------------------------
-    elif exp == 3101:
+    elif exp == 1:
+        config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
+        config[PRETTY_NAME] = "Light NAFNet3.4M denoise - DIV2K_512 0-50 256x256"
+        config[DATALOADER][NAME] = DATASET_DIV2K
+        config[DATALOADER][CONFIG_DEGRADATION] = dict(
+            noise_stddev=[0., 50.]
+        )
+        config[DATALOADER][SIZE] = (256, 256)
+        # # 3.4M parameters
+        config[MODEL][ARCHITECTURE] = dict(
+            width=64,
+            enc_blk_nums=[1, 1, 2],
+            middle_blk_num=1,
+            dec_blk_nums=[1, 1, 1],
+        )
+    elif exp == 2:
         config = presets_experiments(exp, n=30,  b=8, model_preset="NAFNet")
         config[PRETTY_NAME] = "NAFNet41.4M denoise - DIV2K_512 0-50 256x256"
         config[DATALOADER][NAME] = DATASET_DIV2K
@@ -135,13 +151,6 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[DATALOADER][SIZE] = (256, 256)
-        # # 3.4M parameters
-        # config[MODEL][ARCHITECTURE] = dict(
-        #     width=64,
-        #     enc_blk_nums=[1, 1, 2],
-        #     middle_blk_num=1,
-        #     dec_blk_nums=[1, 1, 1],
-        # )
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
