@@ -126,8 +126,12 @@ python scripts/interactive_inference_synthetic.py -e 1000 1001
 
 
 ```bash
-python scripts/interactive_inference_natural.py -e 1004  2000 -i "__kodak_dataset/*"
+python scripts/interactive_inference_natural.py -e 3101  3001 -i "__dataset/div2k/DIV2K_valid_HR/DIV2K_valid_HR/*.png" -nop
 ```
+
+> *Note: NAFNet 41.4M parameters Trained on : 
+> - *3001 Deadleaves*
+> - *3101 Natural images (Div2k)*
 
 #### Metrics and batched inference
 [Pretrained models](https://drive.google.com/drive/folders/1HO1FU6hUhezZYD6eDcqKb_pxBM6uLBoV?usp=drive_link)
