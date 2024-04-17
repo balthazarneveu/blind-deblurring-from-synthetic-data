@@ -164,7 +164,7 @@ def get_experiment_config(exp: int) -> dict:
     elif exp == 1:
         config = nafnet_baseline(1, size="light")
     elif exp == 2:
-        config = nafnet_baseline(1, size="regular")
+        config = nafnet_baseline(2, size="regular")
     # ---- VGG Baselines ---
     elif exp == 10:
         config = nafnet_baseline(10, size="ultra_light", loss=LOSS_VGG16)
