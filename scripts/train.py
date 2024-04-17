@@ -146,6 +146,7 @@ def train(config: dict, output_dir: Path, device: str = DEVICE, wandb_flag: bool
             scheduler = ReduceLROnPlateau(optimizer, mode='min', verbose=True, **scheduler_config)
         else:
             raise NameError(f"Scheduler {config[SCHEDULER]} not implemented")
+    logging.info("TRAINING LOOP: ignition")
     model = training_loop(model, optimizer, dl_dict, config, scheduler=scheduler, device=device,
                           wandb_flag=wandb_flag, output_dir=output_dir)
 

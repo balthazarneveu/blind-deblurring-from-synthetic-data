@@ -3,16 +3,20 @@ from rstor.architecture.selector import load_architecture
 from rstor.data.dataloader import get_data_loader
 from typing import Tuple
 import torch
+import logging
 
 
 def get_training_content(
         config: dict,
         training_mode: bool = False,
         device=DEVICE) -> Tuple[torch.nn.Module, torch.optim.Optimizer, dict]:
+    logging.info("loading architecture")
     model = load_architecture(config)
+    logging.info("DONE loading architecture")
     optimizer, dl_dict = None, None
     if training_mode:
         optimizer = torch.optim.Adam(model.parameters(), **config[OPTIMIZER][PARAMS])
+        logging.info("loading dataloader!")
         dl_dict = get_data_loader(config)
     return model, optimizer, dl_dict
 

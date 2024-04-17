@@ -127,7 +127,7 @@ class RestorationDataset(Dataset):
         }
         try:
             self.current_degradation[index][self.blur_deg_str] = self.degradation_blur.current_degradation[index][self.blur_deg_str]
-        except KeyError:
+        except:
             pass
 
         return degraded_img, img_data

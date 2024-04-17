@@ -15,5 +15,5 @@ def load_architecture(config: dict) -> torch.nn.Module:
     else:
         raise ValueError(f"Unknown model {config[MODEL][NAME]}")
     config[MODEL][N_PARAMS] = model.count_parameters()
-    config[MODEL]["receptive_field"] = model.receptive_field()
+    # config[MODEL]["receptive_field"] = model.receptive_field() # way too slow
     return model

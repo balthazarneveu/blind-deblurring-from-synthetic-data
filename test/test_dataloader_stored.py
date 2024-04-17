@@ -30,18 +30,18 @@ def test_dataloader_stored():
     assert item.shape == (3, 64, 64)
 
     # Test case 4: Repeatable results with frozen seed
-    dataset1 = RestorationDataset(images_path=DATASET_PATH/"sample", 
+    dataset1 = RestorationDataset(images_path=DATASET_PATH/"sample",
                                   frozen_seed=42, noise_stddev=(0, 0))
     dataset2 = RestorationDataset(images_path=DATASET_PATH/"sample",
                                   frozen_seed=42, noise_stddev=(0, 0))
     item1, item_tgt1 = dataset1[0]
     item2, item_tgt2 = dataset2[0]
-    
+
     assert torch.all(torch.eq(item1, item2))
-    
+
     # Test case 4: Repeatable results with frozen seed and augmentation
     augmentation_list = [AUGMENTATION_FLIP, AUGMENTATION_ROTATE]
-    dataset1 = RestorationDataset(images_path=DATASET_PATH/"sample", 
+    dataset1 = RestorationDataset(images_path=DATASET_PATH/"sample",
                                   frozen_seed=42, noise_stddev=(0, 0),
                                   augmentation_list=augmentation_list)
     dataset2 = RestorationDataset(images_path=DATASET_PATH/"sample",
@@ -50,8 +50,6 @@ def test_dataloader_stored():
     item1, item_tgt1 = dataset1[0]
     item2, item_tgt2 = dataset2[0]
     assert torch.all(torch.eq(item1, item2))
-
-
 
     # Test case 5: Visualize
     # dataset = RestorationDataset(images_path=DATASET_PATH/"sample",
@@ -64,4 +62,3 @@ def test_dataloader_stored():
     # plt.show()
     # breakpoint()
     print("done")
-
