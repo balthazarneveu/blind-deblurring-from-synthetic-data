@@ -3,6 +3,7 @@ from rstor.properties import (NB_EPOCHS, DATALOADER, BATCH_SIZE, SIZE, LENGTH,
                               MODEL, ARCHITECTURE, ID, NAME, SCHEDULER_CONFIGURATION, OPTIMIZER, PARAMS, LR,
                               LOSS, LOSS_MSE,
                               LOSS_VGG16,
+                              LOSS_MIXED_MSE_VGG16,
                               CONFIG_DEAD_LEAVES,
                               SELECTED_METRICS,
                               METRIC_PSNR, METRIC_SSIM, METRIC_LPIPS, METRIC_PERCEPTUAL,
@@ -117,12 +118,15 @@ def nafnet_baseline(exp: int, size: bool = "regular", loss: str = LOSS_MSE):
         noise_stddev=[1., 100.]
     )
     config[DATALOADER][SIZE] = (256, 256)
-    name += "DIV2K DN 1-100 256x256"
+    name += " DIV2K DN 1-100 256x256"
     if loss == LOSS_MSE:
         config[LOSS] = LOSS_MSE
     elif loss == LOSS_VGG16:
         config[LOSS] = LOSS_VGG16
         name += " VGG"
+    elif loss == LOSS_MIXED_MSE_VGG16:
+        config[LOSS] = LOSS_MIXED_MSE_VGG16
+        name += " MIXED MSE+VGG"
     else:
         raise ValueError(f"Unknown loss {loss}")
     config[PRETTY_NAME] = name
@@ -150,7 +154,7 @@ def get_experiment_config(exp: int) -> dict:
             noise_stddev=[0., 50.]
         )
         config[PRETTY_NAME] = "Vanilla exp from disk - noisy 0-50"
-        # config[LOSS] = LOSS_VGG16
+        config[LOSS] = LOSS_MIXED_MSE_VGG16
     # ---------------------------------
     # Pure DIV2K DENOISING trainings
     # ---------------------------------
@@ -168,6 +172,13 @@ def get_experiment_config(exp: int) -> dict:
         config = nafnet_baseline(11, size="light", loss=LOSS_VGG16)
     elif exp == 12:
         config = nafnet_baseline(12, size="regular", loss=LOSS_VGG16)
+    # ---- MSE+VGG Baselines ---
+    elif exp == 20:
+        config = nafnet_baseline(20, size="ultra_light", loss=LOSS_MIXED_MSE_VGG16)
+    elif exp == 21:
+        config = nafnet_baseline(21, size="light", loss=LOSS_MIXED_MSE_VGG16)
+    elif exp == 22:
+        config = nafnet_baseline(22, size="regular", loss=LOSS_MIXED_MSE_VGG16)
     else:
         raise ValueError(f"Experiment {exp} not found")
     return config
